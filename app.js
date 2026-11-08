@@ -254,6 +254,7 @@ function refreshTimeline(time = 0) {
   $("seek").disabled = !state.parsed.words.length;
 }
 function updateReaderOptions() {
+  $("reader").dataset.highlightStyle = $("highlight-style").value;
   const hidden = $("hide-text").value === "hidden" && !state.revealed;
   $("reader").hidden = hidden;
   $("listening-test").hidden = !hidden;
@@ -966,7 +967,7 @@ on("speed", "input", () => {
   if (state.mode === "tts" && speech.kind === "narration" && !speech.paused)
     speakSentence(Math.max(0, state.activeSentence));
 });
-["highlight", "hide-text"].forEach((id) =>
+["highlight", "highlight-style", "hide-text"].forEach((id) =>
   on(id, "change", updateReaderOptions),
 );
 on("reveal", "click", () => {

@@ -81,3 +81,7 @@ On November 8, 2026, twenty-seven JavaScript tests passed, including standalone 
 ## Volume and optional speech pitch
 
 On November 8, 2026, twenty-nine JavaScript tests passed. Added controller coverage for all utterance kinds, mute, defaults and bounded/invalid values; session tests cover round-trip settings and legacy defaults. Browser checks confirmed both media elements receive zero volume, previews/pronunciation/narration receive chosen volume and pitch, changes cancel active speech, pitch resets to 1, and save/load restores both values. A real preview entered the speaking state with non-default settings; no comparative audio-quality assessment was made. Fixture overrides and temporary saved-session changes were restored. Expanded advanced settings reflowed at 320px with 200% text in dark/reduced-motion mode without horizontal overflow. Syntax and whitespace checks passed.
+
+## Underline highlight styles
+
+On November 8, 2026, Chrome DevTools MCP checked Background, Underline and combined styles against existing active word/sentence elements. Computed styles confirmed transparent backgrounds for underline-only mode, a thicker word stroke, and retained backgrounds in combined mode. Off removed active highlights, keyboard focus kept a solid outline, and forced-colors mode retained both an underline and system-color outline. The selector reflowed at 320px with 200% text in dark/reduced-motion mode without horizontal overflow. JavaScript syntax and whitespace checks passed; playback logic was unchanged and audio tests were not repeated.

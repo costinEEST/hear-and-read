@@ -803,3 +803,34 @@ select:disabled {
 
 /* Reader words remain selectable for explicit pronunciation actions. */
 .reader .word { user-select: text; }
+
+/* Highlight target and visual style are independent. Keep keyboard focus visible. */
+.reader:is([data-highlight-style="underline"], [data-highlight-style="both"]) .sentence.active .word {
+  text-decoration-line: underline;
+  text-decoration-thickness: .07em;
+  text-underline-offset: .2em;
+  text-decoration-skip-ink: auto;
+}
+.reader:is([data-highlight-style="underline"], [data-highlight-style="both"]) .word.active,
+.reader:is([data-highlight-style="underline"], [data-highlight-style="both"]) .sentence.active .word.active {
+  text-decoration-line: underline;
+  text-decoration-thickness: .16em;
+  text-underline-offset: .2em;
+  text-decoration-skip-ink: auto;
+}
+.reader[data-highlight-style="underline"] .sentence.active,
+.reader[data-highlight-style="underline"] .word.active {
+  background: transparent;
+  color: inherit;
+}
+.reader[data-highlight-style="underline"] .word.active:not(:focus-visible) {
+  outline: none;
+}
+@media (forced-colors: active) {
+  .reader[data-highlight-style="underline"] .word.active:not(:focus-visible),
+  .reader[data-highlight-style] .word.active,
+  .reader[data-highlight-style] .sentence.active {
+    outline: 2px solid Highlight;
+    text-decoration-color: CanvasText;
+  }
+}

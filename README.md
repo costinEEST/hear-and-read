@@ -83,3 +83,5 @@ The [project maintenance skill](.agents/skills/maintain-hear-and-read/SKILL.md) 
 To practice pronunciation, choose **Speak this word** for the current word (also available in Word options), or select practice text in the reader and choose **Speak selection**. Both use your chosen browser voice and speed, pause existing playback, and stop after that text. **Stop pronunciation** cancels the sample. Normal word clicks continue to jump into sentence playback.
 
 **Volume** adjusts recordings, pronunciation clips and browser speech; zero mutes them. **Advanced speech settings → Pitch** changes browser speech tone, defaults to `1`, and has a reset button. Pitch does not improve voice quality or change recordings. Changes stop active browser speech; press Play or test the voice again. Recording volume applies immediately, subject to device support. Sessions retain both settings.
+
+Choose **Highlight style** above the reader: **Background**, **Underline**, or **Background + underline**. The separate Highlight control selects words, sentences, both or Off. Underlines use a thicker stroke for the active word and a thinner stroke for the sentence.
