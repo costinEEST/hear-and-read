@@ -2,6 +2,27 @@
   "name": "hear-and-read",
   "private": true,
   "type": "module",
-  "engines": {"node": ">=22"},
-  "scripts": { "test": "node --test tests/*.test.mjs" }
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "node scripts/build-assets.mjs",
+    "typecheck": "tsc --noEmit",
+    "test:browser-logic": "node --test tests/*.test.mjs",
+    "test:worker": "npm run build && vitest run",
+    "test": "npm run test:browser-logic && npm run test:worker",
+    "deploy:check": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.6.0",
+    "@cloudflare/workers-types": "^5.20261108.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.158.0"
+  },
+  "dependencies": {
+    "entities": "^9.0.0"
+  }
 }
