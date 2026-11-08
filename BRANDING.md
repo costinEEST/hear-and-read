@@ -43,4 +43,4 @@ Once the public **web app** URL is confirmed:
 
 GitHub repository publication and web-app hosting are separate. GitHub Pages alone cannot run the Python import endpoint. Set the repository's social preview manually to the supplied PNG if desired; application HTML metadata does not control the repository page's preview.
 
-The browser-storage key remains `magyar-studio.sessions.v1` to preserve previously saved sessions; this is an internal compatibility identifier, not public branding. Dated verification reports keep their historical names.
+Session storage uses `hear-and-read.sessions.v1`.

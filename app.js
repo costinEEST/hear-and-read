@@ -19,7 +19,7 @@ const speech = createSpeechPlayback({ onstatechange: renderSpeechState });
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
 const pronunciation = $("pronunciation");
-const STORE = "magyar-studio.sessions.v1";
+const STORE = "hear-and-read.sessions.v1";
 const VOICE_STORE = "hear-and-read.voice-preferences.v1";
 const state = {
   language: "hu",
@@ -822,7 +822,7 @@ function download(name, value) {
 }
 function readSessions() {
   try {
-    const value = JSON.parse(localStorage.getItem(STORE) || "[]");
+    const value = JSON.parse(localStorage.getItem(STORE) ?? "[]");
     if (!Array.isArray(value)) throw new Error("Invalid saved sessions.");
     state.sessions = value.map((entry) => ({
       id: String(entry.id),

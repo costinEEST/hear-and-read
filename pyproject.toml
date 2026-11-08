@@ -1,7 +1,7 @@
 [project]
 name = "hear-and-read"
 version = "0.1.0"
-description = "Local Hungarian listening studio with a dependency-free browser interface"
+description = "Local Hungarian, Spanish and German listening studio with a dependency-free browser interface"
 requires-python = ">=3.12"
 dependencies = [
     # Source page extraction needs DOM queries and tolerant HTML parsing;
