@@ -33,7 +33,7 @@ Restart Python after backend changes; it does not auto-reload. Frontend edits ne
 
 ## Change dependencies intentionally
 
-First check the standard library and existing packages. New runtime packages belong on the backend. Document each direct dependency's purpose and why existing tools are insufficient beside its declaration in `pyproject.toml`; synchronize the rationale in `tooling.md`.
+First check the standard library and existing packages. New runtime packages belong on the backend. Document each direct dependency's purpose and why existing tools are insufficient beside its declaration in `pyproject.toml`; avoid duplicating the rationale in other documents.
 
 Substitute the real package name in these examples:
 

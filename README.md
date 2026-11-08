@@ -34,6 +34,12 @@ For environment details, another port, dependency changes and development checks
 - **Your own recording:** select **Original recording**, expand **Use your own audio** and select a file or paste an HTTPS audio URL. Paste matching text in the selected language, then press **Apply text**.
 - **Browser voice:** leave the voice on **Auto · best available**, use **Test voice**, then press **Play**. Only the highest available quality tier is offered; natural/neural, premium and enhanced variants are preferred over standard voices. Recommendations use voice metadata, not a measured audio-quality score. If only a standard voice exists, the app says so; it never substitutes another language. Use **Refresh voices** after installing voices on your device.
 
+To practice pronunciation, choose **Speak this word** for the current word (also available in Word options), or select practice text in the reader and choose **Speak selection**. Both use your chosen browser voice and speed, pause existing playback, and stop after that text. **Stop pronunciation** cancels the sample. Normal word clicks continue to jump into sentence playback.
+
+**Volume** adjusts recordings, pronunciation clips and browser speech; zero mutes them. **Advanced speech settings → Pitch** changes browser speech tone, defaults to `1`, and has a reset button. Pitch does not improve voice quality or change recordings. Changes stop active browser speech; press Play or test the voice again. Recording volume applies immediately, subject to device support. Sessions retain both settings.
+
+Choose **Highlight style** above the reader: **Background**, **Underline**, or **Background + underline**. The separate Highlight control selects words, sentences, both or Off. Underlines use a thicker stroke for the active word and a thinner stroke for the sentence.
+
 Click words to seek. Repeat a sentence, add 1.8-second shadowing pauses, blur/hide the text, or switch off **Follow words** to move the highlight manually. English translations are provided only for the built-in demos. Keyboard shortcuts outside controls are Space to play/pause and ← / → to change sentence. Native buttons, inputs and word controls also work from the keyboard.
 
 Voice choices are remembered separately for each language in this browser. Sessions also save their practice language and voice preference. Available voices vary across browser/device combinations. Some voices need an online speech service; the app identifies them. Natural/premium quality and word-boundary events are not guaranteed. Install enhanced/premium system voices for more choices, or use a human recording. Current website imports remain Hungarian and switch the practice language to Hungarian explicitly.
@@ -72,16 +78,14 @@ An external forced-alignment tool can prepare word timestamps, but its output mu
 
 ## Save your practice
 
-**Save session** stores text, timings, title, playback speed and remote audio URL in this browser. **Export session** creates a portable JSON file; import it on the same or another device. **Export timings** exports only word timings.
+**Save session** stores text, timings, title, language, voice preference, playback speed, volume, pitch and remote audio URL in this browser. **Export session** creates a portable JSON file; import it on the same or another device. **Export timings** exports only word timings.
 
 Uploaded audio stays in memory and is not saved or uploaded. Select the original local audio file again after reloading or importing its saved session. Browser storage may be cleared by your browser; export sessions you want to keep. If storage is blocked or full, practice and JSON export still work.
 
 ## Development
 
-The [project maintenance skill](.agents/skills/maintain-hear-and-read/SKILL.md) covers the source layout, development workflow, checks, and when to use Modern Web Guidance. See [tooling.md](tooling.md) for implementation rationale, [BRANDING.md](BRANDING.md) for brand assets and publication metadata, and [verification.md](verification.md) for dated verification results. Assets, tests and agent skills retain their own folders; application source files live at the project root.
+The [project maintenance skill](.agents/skills/maintain-hear-and-read/SKILL.md) covers the source layout, development workflow, checks, and when to use Modern Web Guidance. See [BRANDING.md](BRANDING.md) for brand assets and publication metadata. Assets, tests and agent skills retain their own folders; application source files live at the project root.
 
-To practice pronunciation, choose **Speak this word** for the current word (also available in Word options), or select practice text in the reader and choose **Speak selection**. Both use your chosen browser voice and speed, pause existing playback, and stop after that text. **Stop pronunciation** cancels the sample. Normal word clicks continue to jump into sentence playback.
+Run JavaScript regression tests with `npm test` (Node 22+). They cover parsing, timing, session validation, voice ranking and speech-controller lifecycle behavior using injected speech engines. Python checks and browser smoke-test procedures are documented in the maintenance skill. Synthetic speech tests do not establish native voice quality or availability.
 
-**Volume** adjusts recordings, pronunciation clips and browser speech; zero mutes them. **Advanced speech settings → Pitch** changes browser speech tone, defaults to `1`, and has a reset button. Pitch does not improve voice quality or change recordings. Changes stop active browser speech; press Play or test the voice again. Recording volume applies immediately, subject to device support. Sessions retain both settings.
-
-Choose **Highlight style** above the reader: **Background**, **Underline**, or **Background + underline**. The separate Highlight control selects words, sentences, both or Off. Underlines use a thicker stroke for the active word and a thinner stroke for the sentence.
+This server is intended for local personal use. Website extraction can change or fail, background tabs can delay loop/shadowing boundaries, and device/browser speech capabilities vary. Playback is a listening aid rather than a sample-accurate audio editor.

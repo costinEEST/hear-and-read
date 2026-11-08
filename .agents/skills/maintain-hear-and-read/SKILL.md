@@ -10,8 +10,8 @@ Keep the root-level browser files as plain HTML, CSS and browser-native JavaScri
 ## Read what the task needs
 
 - For setup, running the app, Python/tool changes, dependencies and backend validation, read [Python environment and commands](references/python-environment.md). Keep the two-command user quick start in the README; the reference links to it and owns detailed environment/development procedures.
-- For architecture, dependency rationale, import boundaries and limitations, read [tooling.md](../../../tooling.md). Keep explanations there instead of duplicating them in this skill.
-- Keep [README.md](../../../README.md) focused on using the studio. Keep dated observations in [verification.md](../../../verification.md); this skill describes future workflow, not past results.
+- For importer, speech, persistence or styling changes, read the relevant section of [maintenance invariants and checks](references/maintenance.md). Dependency rationale stays beside declarations in `pyproject.toml`.
+- Keep [README.md](../../../README.md) focused on using the studio and finding test commands. Put durable regression coverage in tests, maintenance constraints in this skill/reference, and actual check results in commit messages or task handoffs; do not maintain a separate dated verification log.
 
 ## Modern Web Guidance: when
 
@@ -46,7 +46,7 @@ Reference: [official Modern Web Guidance skill](https://github.com/GoogleChrome/
 
 Keep assets in `assets/`, regression tests and fixtures in `tests/`, and project skills in `.agents/skills/`. Build future extension work separately when requested.
 
-Keep content-source selection independent of browser speech/full-text audio. Register new sources in `content_import.py`; preserve source credits and separate word-pronunciation clips from full-text narration. Report declined automated access without bypassing it. Preserve publisher segment boundaries while labeling interpolated words/sentences as estimates. Preserve complete timing validation, position-based repeated-word matching, imported timings during metadata loading, saved speed, cancellation of obsolete imports/voice/shadowing work, and local-only audio-file handling. See `tooling.md` for the underlying boundaries and limitations.
+Keep content-source selection independent of browser speech/full-text audio. Register new sources in `content_import.py`; preserve source credits and separate word-pronunciation clips from full-text narration. Report declined automated access without bypassing it. Preserve publisher segment boundaries while labeling interpolated words/sentences as estimates. Preserve complete timing validation, position-based repeated-word matching, imported timings during metadata loading, saved speed, cancellation of obsolete imports/voice/shadowing work, and local-only audio-file handling.
 
 ## Language and voice goals
 
@@ -66,4 +66,4 @@ Keep content-source selection independent of browser speech/full-text audio. Reg
 - For layout changes, check 320px touch reflow, short landscape and equivalent 200% text sizing. Check keyboard operation, focus restoration, reduced motion and high contrast when relevant. Lighthouse supports these observations; it does not prove every interaction.
 - For documentation-only changes, check links and command accuracy. Validate skills with the skill-creator validator; do not run application tests or the browser matrix without a separate reason.
 
-Report actual checks and limits. Update dated verification claims only after performing the corresponding checks; moving documentation is not a new browser verification.
+Report actual checks and limits in the task handoff or commit message. Distinguish injected-engine tests from native browser playback and fixtures from live imports. Moving documentation is not new behavioral verification.
