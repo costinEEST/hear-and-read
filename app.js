@@ -13,6 +13,9 @@ import {
 } from "./timing.js";
 import { LANGUAGES, DEMOS, bestVoices, languageConfig } from "./speech.js";
 
+import { createSpeechPlayback } from "./speech-playback.js";
+
+const speech = createSpeechPlayback();
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
 const pronunciation = $("pronunciation");
@@ -22,7 +25,6 @@ const state = {
   language: "hu",
   voiceChoices: { hu: "auto", es: "auto", de: "auto" },
   voiceEntries: [],
-  preview: false,
   text: DEMO.text,
   title: DEMO.title,
   parsed: parseText(DEMO.text),
@@ -39,7 +41,6 @@ const state = {
   playing: false,
   voices: [],
   speechToken: 0,
-  utterance: null,
   timer: null,
   raf: null,
   objectUrl: "",
@@ -81,10 +82,7 @@ function cancelGap() {
 }
 function stopSpeech() {
   state.speechToken++;
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
-  state.utterance = null;
-  state.preview = false;
-  state.previewUtterance = null;
+  speech.stop();
   $("preview-voice").textContent = "Test voice";
 }
 function stop() {
@@ -462,7 +460,7 @@ function currentVoice() {
 }
 function speakSentence(index, fromWord = null) {
   pronunciation.pause();
-  if (!("speechSynthesis" in window))
+  if (!speech.available)
     throw new Error(
       "Speech synthesis is unavailable. Use an original recording instead.",
     );
@@ -479,18 +477,11 @@ function speakSentence(index, fromWord = null) {
   const firstWord = fromWord ?? sentence.words[0].index;
   const charStart = state.parsed.words[firstWord].start;
   const end = sentence.words.at(-1).start + sentence.words.at(-1).text.length;
-  const utterance = new SpeechSynthesisUtterance(
-    state.text.slice(charStart, end),
-  );
-  utterance.voice = voice;
-  utterance.lang = voice.lang || languageConfig(state.language).locale;
-  utterance.rate = Number($("speed").value);
-  state.utterance = utterance;
   state.playing = true;
   $("play").textContent = "Pause";
   setActive(-1, index);
   refreshTimeline(state.timings[firstWord]?.start);
-  utterance.onboundary = (event) => {
+  const onboundary = (event) => {
     if (token !== state.speechToken || !$("follow").checked) return;
     const position = charStart + event.charIndex;
     const word = sentence.words.find(
@@ -502,7 +493,7 @@ function speakSentence(index, fromWord = null) {
       refreshTimeline(state.timings[word.index].start);
     }
   };
-  utterance.onerror = (event) => {
+  const onerror = (event) => {
     if (token !== state.speechToken) return;
     state.playing = false;
     $("play").textContent = "Play";
@@ -511,9 +502,8 @@ function speakSentence(index, fromWord = null) {
         "The selected voice could not speak. Test another available voice or use a recording.",
       );
   };
-  utterance.onend = guard(() => {
+  const onend = guard(() => {
     if (token !== state.speechToken) return;
-    state.utterance = null;
     const next = state.repeat ? state.loopSentence : index + 1;
     if (next >= state.parsed.sentences.length) {
       state.playing = false;
@@ -536,7 +526,17 @@ function speakSentence(index, fromWord = null) {
       );
     } else speakSentence(next);
   });
-  speechSynthesis.speak(utterance);
+  try {
+    speech.play({
+      text: state.text.slice(charStart, end), voice,
+      lang: languageConfig(state.language).locale, rate: Number($("speed").value),
+      onboundary, onerror, onend,
+    });
+  } catch (failure) {
+    state.playing = false;
+    $("play").textContent = "Play";
+    throw failure;
+  }
   error("");
 }
 function togglePlay() {
@@ -548,11 +548,11 @@ function togglePlay() {
   }
   if (state.mode === "audio") return audio.paused ? playAudio() : stop();
   if (state.playing) {
-    speechSynthesis.pause();
+    speech.pause();
     state.playing = false;
     $("play").textContent = "Play";
-  } else if (state.utterance && speechSynthesis.paused) {
-    speechSynthesis.resume();
+  } else if (speech.paused) {
+    speech.resume();
     state.playing = true;
     $("play").textContent = "Pause";
   } else speakSentence(Math.max(0, state.activeSentence));
@@ -687,7 +687,7 @@ function loadVoices() {
   $("voice").value = available ? choice : "auto";
   $("voice").disabled = !state.voices.length;
   $("preview-voice").disabled = !state.voices.length;
-  if (state.mode === "tts" && state.utterance && !state.playing) stopSpeech();
+  if (state.mode === "tts" && speech.active && !state.playing) stopSpeech();
   if (!available) {
     const best = state.voices[0];
     $("voice-note").textContent = best
@@ -696,23 +696,26 @@ function loadVoices() {
   } else updateVoiceNote();
 }
 function previewVoice() {
-  if (state.preview) { stop(); return; }
+  if (speech.kind === "preview") { stop(); return; }
   const voice = currentVoice();
   if (!voice) throw new Error("No matching voice is available. Refresh voices or use a recording.");
   stop();
-  const token = state.speechToken;
-  const sample = new SpeechSynthesisUtterance(languageConfig(state.language).sample);
-  sample.voice = voice; sample.lang = voice.lang; sample.rate = 1;
-  state.preview = true; $("preview-voice").textContent = "Stop sample";
-  sample.onend = () => { if (token === state.speechToken) { state.preview = false; state.previewUtterance = null; $("preview-voice").textContent = "Test voice"; } };
-  sample.onerror = event => {
-    if (token !== state.speechToken) return;
-    state.preview = false; state.previewUtterance = null; $("preview-voice").textContent = "Test voice";
-    if (!["interrupted", "canceled"].includes(event.error)) error("The voice sample could not play. Try another voice or a recording.");
-  };
-  // Retain the utterance until its callbacks finish, as with full-text speech.
-  state.previewUtterance = sample;
-  speechSynthesis.speak(sample);
+  $("preview-voice").textContent = "Stop sample";
+  try {
+    speech.play({
+      text: languageConfig(state.language).sample, voice,
+      lang: languageConfig(state.language).locale, kind: "preview",
+      onend: () => { $("preview-voice").textContent = "Test voice"; },
+      onerror: event => {
+        $("preview-voice").textContent = "Test voice";
+        if (!["interrupted", "canceled"].includes(event.error))
+          error("The voice sample could not play. Try another voice or a recording.");
+      },
+    });
+  } catch (failure) {
+    $("preview-voice").textContent = "Test voice";
+    throw failure;
+  }
 }
 
 function download(name, value) {
@@ -874,10 +877,10 @@ on("voice", "change", () => {
   state.voiceChoices[state.language] = $("voice").value;
   saveVoicePreferences();
   updateVoiceNote();
-  if (state.preview) stop();
+  if (speech.kind === "preview") stop();
   if (state.mode === "tts" && state.playing)
     speakSentence(Math.max(0, state.activeSentence));
-  else if (state.mode === "tts" && state.utterance) stopSpeech();
+  else if (state.mode === "tts" && speech.active) stopSpeech();
 });
 on("preview-voice", "click", previewVoice);
 on("refresh-voices", "click", () => { loadVoices(); });

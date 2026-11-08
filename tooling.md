@@ -53,3 +53,9 @@ Use the shared `--text-*` and `--leading-*` tokens for new styles: small text st
 - Background tabs can throttle animation and media events, so loop/pause boundaries can overshoot. This is a listening aid, not a sample-accurate audio editor.
 - A remote audio server can reject playback. Selecting the downloaded audio locally is supported.
 - This server is for local personal use. Multiuser hosting, authentication, server persistence and the future browser extension are outside this refactor.
+
+## Speech playback module
+
+`speech-playback.js` owns browser utterances, strong references, pause/resume, cancellation and lifecycle callback filtering. It has no DOM or sentence-model dependencies; injected browser APIs allow lifecycle regression tests. Both previews and narration use this controller. Terminal events release the utterance before notifying the caller, allowing the next sentence to start safely. Cancellation invalidates callbacks before calling the engine, including synchronous cancellation errors.
+
+`app.js` owns sentence sequencing, repeat/shadowing delays, highlighting and UI state. Its speech token also invalidates pending shadowing timers. Voice discovery and preferences remain in the app; ranking stays in `speech.js`. Keep the server asset allowlist synchronized when adding browser modules.

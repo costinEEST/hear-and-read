@@ -38,7 +38,8 @@ Reference: [official Modern Web Guidance skill](https://github.com/GoogleChrome/
 
 - `index.html`: native controls, structure and dialogs.
 - `styles.css`: presentation and responsive styles.
-- `app.js`: playback, voice events, cancellation, sync editing and persistence.
+- `app.js`: playback UI, sentence sequencing, voice discovery, sync editing and persistence.
+- `speech-playback.js`: DOM-independent utterance lifecycle, previews/narration, pause/resume and cancellation. Keep callback invalidation inside the controller; app tokens also invalidate shadowing timers.
 - `timing.js`: locale-aware parsing, timing and session validation; `speech.js`: language definitions, demos and pure voice ranking.
 - `server.py`: local serving/import endpoint; `content_import.py`: source registry; `jw_import.py` and `wiki_import.py`: source extraction; `source_http.py`: bounded fetching.
 - `tests/`: active regression checks and fixtures.

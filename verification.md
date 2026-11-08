@@ -55,3 +55,9 @@ The four-step setup reflows at 320px with 200% text sizing and at 640×320 lands
 ## Import error feedback
 
 Chrome MCP checks with explicit mocked responses verified the declined-access JSON/HTTP 502 message, a non-JSON HTTP 502 response, a failed network request, and a timeout. Each displayed a readable import error, re-enabled the import button, and preserved the current text. The HTTP failure error box received focus; editing the URL cleared the message. The visible error reflows at 320px with 200% text in dark mode, and the browser console had no errors. JavaScript syntax passed. These checks exercised UI error handling without making additional requests to a blocked website.
+
+## Speech playback extraction
+
+On November 8, 2026, eighteen JavaScript and twelve Python tests passed after extracting `speech-playback.js`. Five new controller tests cover lifecycle forwarding, cancellation (including synchronous cancel errors), preview replacement, pause/resume, terminal cleanup, sentence chaining, unavailable APIs and synchronous engine failures. Browser module syntax, the server Ruff checks and whitespace checks passed.
+
+Chrome DevTools MCP loaded the controller through the actual server (HTTP 200), confirmed a real German preview and narration entered the speaking state, verified narration replaced the preview, and observed paused/resumed engine state after allowing asynchronous engine updates. Changing practice language canceled speech without an error. No layout changes were made or layout matrix repeated. Testing used an owned server on port 8766.

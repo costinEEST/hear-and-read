@@ -41,6 +41,7 @@ class Handler(SimpleHTTPRequestHandler):
             "/app.js",
             "/timing.js",
             "/speech.js",
+            "/speech-playback.js",
             "/assets/logo.svg",
             "/assets/favicon.svg",
             "/assets/wordmark.svg",
