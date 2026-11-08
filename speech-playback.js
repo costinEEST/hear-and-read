@@ -27,7 +27,7 @@ export function createSpeechPlayback({
     stop,
     pause() { if (current && status === 'speaking') { transition('pausing'); synthesis.pause(); } },
     resume() { if (current && status === 'paused') { transition('resuming'); synthesis.resume(); } },
-    play({ text, voice, lang, rate = 1, kind = 'narration',
+    play({ text, voice, lang, rate = 1, volume = 1, pitch = 1, kind = 'narration',
       onboundary, onstart, onpause, onresume, onend, onerror, onwordstatus }) {
       if (!available) throw new Error('Speech synthesis is unavailable. Use an original recording instead.');
       if (!voice) throw new Error('Select an available matching voice first.');
@@ -37,6 +37,8 @@ export function createSpeechPlayback({
       utterance.voice = voice;
       utterance.lang = voice.lang || lang;
       utterance.rate = rate;
+      utterance.volume = Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1;
+      utterance.pitch = Number.isFinite(pitch) ? Math.max(0, Math.min(2, pitch)) : 1;
       current = { utterance, kind };
       transition('starting');
       let wordObserved = false;

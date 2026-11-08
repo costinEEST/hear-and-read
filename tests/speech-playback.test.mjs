@@ -252,3 +252,21 @@ test('standalone pronunciation completes once without queuing narration', () => 
   assert.equal(controller.active, false);
   assert.equal(controller.status, 'idle');
 });
+
+test('volume and pitch default safely, preserve mute and clamp API ranges', () => {
+  const { controller, spoken } = fixture();
+  for (const kind of ['narration', 'preview', 'pronunciation']) {
+    controller.play({ text: 'Hallo', voice, kind, volume: 0, pitch: 1.25 });
+    assert.equal(spoken.at(-1).volume, 0);
+    assert.equal(spoken.at(-1).pitch, 1.25);
+  }
+  controller.play({ text: 'Hallo', voice });
+  assert.equal(spoken.at(-1).volume, 1);
+  assert.equal(spoken.at(-1).pitch, 1);
+  controller.play({ text: 'Hallo', voice, volume: 3, pitch: -1 });
+  assert.equal(spoken.at(-1).volume, 1);
+  assert.equal(spoken.at(-1).pitch, 0);
+  controller.play({ text: 'Hallo', voice, volume: NaN, pitch: Infinity });
+  assert.equal(spoken.at(-1).volume, 1);
+  assert.equal(spoken.at(-1).pitch, 1);
+});

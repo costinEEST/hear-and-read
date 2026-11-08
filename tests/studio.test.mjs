@@ -58,3 +58,20 @@ test('source credits and pronunciation survive saving; unsafe source links are r
   assert.throws(()=>validateSession({...session,pronunciationUrl:'https://evil.test/word.mp3'}));
   assert.equal(validateSession({...session,source:undefined,pronunciationUrl:undefined}).source,null);
 });
+
+test('session sound settings preserve mute and default legacy sessions to normal pitch', () => {
+  const base = { version: 1, text: DEMO.text, mode: 'tts',
+    timings: estimate(parseText(DEMO.text).words, 20) };
+  const legacy = validateSession(base);
+  assert.equal(legacy.volume, 1);
+  assert.equal(legacy.pitch, 1);
+  const muted = validateSession({ ...base, volume: 0, pitch: 1.25 });
+  assert.equal(muted.volume, 0);
+  assert.equal(muted.pitch, 1.25);
+  const invalid = validateSession({ ...base, volume: Infinity, pitch: NaN });
+  assert.equal(invalid.volume, 1);
+  assert.equal(invalid.pitch, 1);
+  const clamped = validateSession({ ...base, volume: -2, pitch: 9 });
+  assert.equal(clamped.volume, 0);
+  assert.equal(clamped.pitch, 2);
+});

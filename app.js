@@ -426,6 +426,19 @@ function resetText(text, title) {
   renderReader();
   error("");
 }
+function applySoundSettings() {
+  const volume = Number($("volume").value), pitch = Number($("pitch").value);
+  audio.volume = volume;
+  pronunciation.volume = volume;
+  const volumeLabel = volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`;
+  $("volume-value").value = volumeLabel;
+  $("volume").setAttribute("aria-valuetext", volumeLabel);
+  $("pitch-value").value = `${pitch.toFixed(2)}${pitch === 1 ? " (default)" : ""}`;
+  $("pitch").setAttribute("aria-valuetext", `${pitch.toFixed(2)}${pitch === 1 ? ", default" : ""}`);
+}
+function speechSoundOptions() {
+  return { volume: Number($("volume").value), pitch: Number($("pitch").value) };
+}
 function loadSession(value) {
   const data = validateSession(value);
   stop();
@@ -440,6 +453,9 @@ function loadSession(value) {
   state.source = data.source;
   state.pronunciationUrl = data.pronunciationUrl;
   renderCredit();
+  $("volume").value = String(data.volume);
+  $("pitch").value = String(data.pitch);
+  applySoundSettings();
   state.speed = data.speed;
   $("speed").value = String(data.speed);
   $("speed-value").value = `${data.speed.toFixed(2)}×`;
@@ -465,6 +481,7 @@ function snapshot() {
     timings: state.timings,
     timingSource: state.timingSource,
     speed: Number($("speed").value),
+    ...speechSoundOptions(),
     mode: state.mode,
     audioUrl: audio.getAttribute("src")?.startsWith("https:") ? audio.src : "",
     audioName: state.audioName,
@@ -562,6 +579,7 @@ function speakSentence(index, fromWord = null) {
   });
   try {
     speech.play({
+      ...speechSoundOptions(),
       text: state.text.slice(charStart, end), voice,
       lang: languageConfig(state.language).locale, rate: Number($("speed").value),
       onboundary, onerror, onend, onwordstatus: showWordStatus,
@@ -753,6 +771,7 @@ function speakPronunciation(text) {
   if (!voice) throw new Error(`No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice and refresh voices.`);
   stop();
   speech.play({
+    ...speechSoundOptions(),
     text, voice, lang: languageConfig(state.language).locale,
     rate: Number($("speed").value), kind: "pronunciation",
     onwordstatus: showWordStatus,
@@ -771,6 +790,7 @@ function previewVoice() {
   $("preview-voice").textContent = "Stop sample";
   try {
     speech.play({
+      ...speechSoundOptions(),
       text: languageConfig(state.language).sample, voice,
       lang: languageConfig(state.language).locale, kind: "preview",
       onwordstatus: showWordStatus,
@@ -926,6 +946,16 @@ on("seek", "input", () => {
   state.lastTime = time;
   audio.currentTime = time;
   tick(true);
+});
+for (const id of ["volume", "pitch"]) {
+  on(id, "input", () => {
+    applySoundSettings();
+    if (speech.active) { stop(); notice("Speech settings updated. Press Play or test the voice again."); }
+  });
+}
+on("reset-pitch", "click", () => {
+  $("pitch").value = "1";
+  $("pitch").dispatchEvent(new Event("input"));
 });
 on("speed", "input", () => {
   const rate = Number($("speed").value);

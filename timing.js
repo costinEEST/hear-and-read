@@ -96,6 +96,8 @@ export function validateSession(data) {
     voiceChoice:typeof data.voiceChoice === 'string' ? data.voiceChoice.slice(0,1000) : 'auto',
     timings, timingSource:['estimated','publisher','imported','manual'].includes(data.timingSource) ? data.timingSource : 'imported',
     speed:Number.isFinite(data.speed) ? Math.max(.5,Math.min(1.5,data.speed)) : 1,
+    volume:Number.isFinite(data.volume) ? Math.max(0,Math.min(1,data.volume)) : 1,
+    pitch:Number.isFinite(data.pitch) ? Math.max(0,Math.min(2,data.pitch)) : 1,
     mode:data.mode, audioUrl, audioName:String(data.audioName || ''),
     source:validateSource(data.source), pronunciationUrl:validatePronunciation(data.pronunciationUrl),
   };

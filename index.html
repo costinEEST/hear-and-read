@@ -81,6 +81,8 @@
           <div class="times"><span id="elapsed">0:00</span><span id="duration">0:00</span></div>
           <div class="playback"><button id="previous" aria-label="Previous sentence">← Previous</button><button id="play" class="primary">Play</button><button id="next" aria-label="Next sentence">Next →</button><button id="repeat" aria-pressed="false">Repeat sentence</button></div>
           <div class="speed-row"><label for="speed">Speed <output id="speed-value" for="speed">1.00×</output></label><input id="speed" type="range" min=".5" max="1.5" step=".05" value="1"></div>
+          <div class="speed-row"><label for="volume">Volume <output id="volume-value" for="volume">100%</output></label><input id="volume" type="range" min="0" max="1" step=".05" value="1" aria-valuetext="100%" aria-describedby="sound-help"></div>
+          <p id="sound-help" class="muted small">Volume applies to recordings, pronunciation clips and browser speech. Changes stop browser speech; press Play or test the voice again. Some devices use system volume for recordings.</p>
           <div class="checks"><label for="follow"><input id="follow" type="checkbox" checked>Follow words</label><label for="scroll"><input id="scroll" type="checkbox" checked>Auto-scroll</label><label for="shadow"><input id="shadow" type="checkbox">Shadowing · 1.8s pause</label></div>
           <p class="muted small">Shortcuts outside controls: Space play/pause · ← / → sentence</p>
         </div>
@@ -110,6 +112,7 @@
             <p id="voice-note" class="muted small" role="status"></p>
             <div class="actions"><button id="preview-voice" type="button" disabled>Test voice</button><button id="refresh-voices" type="button">Refresh voices</button></div>
             <p id="voice-quality-help" class="muted small">Auto selects the best available voice in this browser. Only the highest available quality tier is offered. Voice quality varies by browser and device.</p>
+            <details><summary>Advanced speech settings</summary><div class="speed-row"><label for="pitch">Pitch <output id="pitch-value" for="pitch">1.00 (default)</output></label><input id="pitch" type="range" min="0" max="2" step=".05" value="1" aria-valuetext="1.00, default" aria-describedby="pitch-help"></div><button id="reset-pitch" type="button">Reset pitch</button><p id="pitch-help" class="muted small">Default is 1. Pitch changes the tone of browser speech, not voice quality. It does not affect recordings. Changes stop browser speech; test the voice again. Some voices may ignore pitch.</p></details>
             <details><summary>Improve voice quality</summary><p class="muted small">Download an enhanced or premium voice for your language in your device's speech/accessibility settings, then refresh voices here. Browser speech may expose fewer voices than your device or a browser's built-in Read Aloud feature.</p><p class="muted small">Natural/neural labels come from the voice provider; they are not a measured quality guarantee. If no suitable voice is available, use a recording. Some voices do not provide word highlighting.</p></details>
           </div>
           <div id="audio-panel" hidden>
