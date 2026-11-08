@@ -69,3 +69,9 @@ Explicit word/selection pronunciation uses controller kind `pronunciation` witho
 Volume is shared by both HTML audio elements and all utterance kinds. Pitch is speech-only and defaults to 1. The controller clamps finite API values (volume 0–1, pitch 0–2) and preserves zero; invalid values default to 1. Session validation uses the same ranges with legacy defaults. Slider input updates media volume immediately and cancels active speech rather than assuming live utterance mutation is honored. Range controls retain native keyboard behavior and expose formatted values with aria-valuetext. Device volume/pitch implementation can vary.
 
 Reader highlight target and style are independent controls. `updateReaderOptions` sets the reader highlight-style data attribute; CSS applies background, underline or both to existing active word/sentence elements. Keep the active-word stroke thicker than sentence strokes, preserve keyboard focus indicators, and use system-color outlines in forced-colors mode. No DOM range overlays or new highlighting engine are needed.
+
+## TODO: extension speech adapter
+
+- [ ] Add an adapter around `chrome.tts` when implementing the browser extension. Use voice metadata and `requiredEventTypes` to select engines supporting word events, and map their lifecycle/boundary events to the speech controller's interface. Preserve cancellation and stale-callback isolation.
+
+This API requires an extension context and is unavailable to the ordinary web page, which continues to use Web Speech synthesis. Word-event support does not guarantee better audio quality; assess voice quality separately. See the [Chrome TTS API documentation](https://developer.chrome.com/docs/extensions/reference/api/tts).
