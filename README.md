@@ -79,3 +79,5 @@ Uploaded audio stays in memory and is not saved or uploaded. Select the original
 ## Development
 
 The [project maintenance skill](.agents/skills/maintain-hear-and-read/SKILL.md) covers the source layout, development workflow, checks, and when to use Modern Web Guidance. See [tooling.md](tooling.md) for implementation rationale, [BRANDING.md](BRANDING.md) for brand assets and publication metadata, and [verification.md](verification.md) for dated verification results. Assets, tests and agent skills retain their own folders; application source files live at the project root.
+
+To practice pronunciation, choose **Speak this word** for the current word (also available in Word options), or select practice text in the reader and choose **Speak selection**. Both use your chosen browser voice and speed, pause existing playback, and stop after that text. **Stop pronunciation** cancels the sample. Normal word clicks continue to jump into sentence playback.

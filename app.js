@@ -23,6 +23,7 @@ const STORE = "magyar-studio.sessions.v1";
 const VOICE_STORE = "hear-and-read.voice-preferences.v1";
 const state = {
   language: "hu",
+  selectionText: "",
   voiceChoices: { hu: "auto", es: "auto", de: "auto" },
   voiceEntries: [],
   text: DEMO.text,
@@ -82,6 +83,8 @@ function cancelGap() {
   $("your-turn").hidden = true;
 }
 function renderSpeechState({ status, kind }) {
+  $("stop-pronunciation").hidden = kind !== "pronunciation" || ["idle", "error"].includes(status);
+  if (kind === "pronunciation") return;
   const labels = {
     idle: "Play", starting: "Cancel start", speaking: "Pause",
     pausing: "Cancel pause", paused: "Resume", resuming: "Cancel resume", error: "Play",
@@ -303,6 +306,8 @@ function setActive(wordIndex, sentenceIndex, scroll = true) {
   }
 }
 function renderReader() {
+  state.selectionText = "";
+  $("speak-selection").disabled = true;
   const demo = DEMOS[state.language];
   const fragment = document.createDocumentFragment();
   state.wordElements = [];
@@ -469,6 +474,7 @@ function snapshot() {
 }
 
 async function playAudio() {
+  if (speech.active) stopSpeech();
   pronunciation.pause();
   if (!audio.hasAttribute("src"))
     throw new Error("Select a recording first, or choose Browser voice.");
@@ -575,7 +581,7 @@ function togglePlay() {
     return;
   }
   if (state.mode === "audio") return audio.paused ? playAudio() : stop();
-  if (speech.kind === "preview") { stop(); speakSentence(Math.max(0, state.activeSentence)); }
+  if (["preview", "pronunciation"].includes(speech.kind)) { stop(); speakSentence(Math.max(0, state.activeSentence)); }
   else if (["starting", "pausing", "resuming"].includes(speech.status)) stop();
   else if (speech.status === "speaking") speech.pause();
   else if (speech.paused) speech.resume();
@@ -719,6 +725,44 @@ function loadVoices() {
       : `No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice or use a recording.`;
   } else updateVoiceNote();
 }
+function captureReaderSelection() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount || selection.isCollapsed) {
+    if (!["speak-selection", "stop-pronunciation"].includes(document.activeElement?.id)) {
+      state.selectionText = "";
+      $("speak-selection").disabled = true;
+    }
+    return false;
+  }
+  const range = selection.getRangeAt(0);
+  const inTranslation = node => (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest(".translation");
+  if (!$("reader").contains(range.startContainer) || !$("reader").contains(range.endContainer) ||
+      inTranslation(range.startContainer) || inTranslation(range.endContainer)) {
+    state.selectionText = "";
+  } else {
+    const fragment = range.cloneContents();
+    fragment.querySelectorAll(".translation").forEach(node => node.remove());
+    state.selectionText = fragment.textContent.trim();
+  }
+  $("speak-selection").disabled = !state.selectionText;
+  return Boolean(state.selectionText);
+}
+function speakPronunciation(text) {
+  if (!text?.trim()) throw new Error("Select text in the reader or choose a word first.");
+  const voice = currentVoice();
+  if (!voice) throw new Error(`No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice and refresh voices.`);
+  stop();
+  speech.play({
+    text, voice, lang: languageConfig(state.language).locale,
+    rate: Number($("speed").value), kind: "pronunciation",
+    onwordstatus: showWordStatus,
+    onerror: event => {
+      if (!["interrupted", "canceled"].includes(event.error))
+        error("Pronunciation could not play. Try another voice.");
+    },
+  });
+  error("");
+}
 function previewVoice() {
   if (speech.kind === "preview") { stop(); return; }
   const voice = currentVoice();
@@ -834,6 +878,17 @@ function wordDialog(index = state.selectedWord) {
   $("word-error").textContent = "";
 }
 
+document.addEventListener("selectionchange", captureReaderSelection);
+on("speak-word", "click", () => speakPronunciation(state.parsed.words[state.selectedWord]?.text));
+on("speak-selection", "click", () => speakPronunciation(state.selectionText));
+on("stop-pronunciation", "click", stop);
+on("speak-dialog-word", "click", () => {
+  try {
+    speakPronunciation(state.parsed.words[state.selectedWord]?.text);
+    $("word-dialog").close();
+  }
+  catch (failure) { $("word-error").textContent = failure.message; }
+});
 on("play", "click", togglePlay);
 on("previous", "click", () =>
   jumpSentence(Math.max(0, state.activeSentence - 1)),
@@ -902,7 +957,7 @@ on("voice", "change", () => {
   state.voiceChoices[state.language] = $("voice").value;
   saveVoicePreferences();
   updateVoiceNote();
-  if (speech.kind === "preview") stop();
+  if (["preview", "pronunciation"].includes(speech.kind)) stop();
   if (state.mode === "tts" && speech.kind === "narration" && !speech.paused)
     speakSentence(Math.max(0, state.activeSentence));
   else if (state.mode === "tts" && speech.active) stopSpeech();
@@ -957,6 +1012,7 @@ on("demo", "click", () => {
   notice(`${languageConfig(state.language).name} demo loaded. Test the recommended voice, then press Play.`);
 });
 on("reader", "click", async (event) => {
+  if (captureReaderSelection()) return;
   const button = event.target.closest("button[data-word]");
   if (!button) return;
   const index = Number(button.dataset.word);

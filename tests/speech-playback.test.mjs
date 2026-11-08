@@ -237,3 +237,18 @@ test('word support is re-observed for each utterance and never inherited from a 
   assert.deepEqual(narration, ['checking', 'sentence']);
   assert.equal(controller.status, 'idle');
 });
+
+
+test('standalone pronunciation completes once without queuing narration', () => {
+  const { controller, spoken } = fixture();
+  controller.play({ text: 'Guten Morgen', voice, kind: 'pronunciation', rate: .75 });
+  spoken[0].onstart({});
+  assert.equal(controller.kind, 'pronunciation');
+  assert.equal(spoken[0].text, 'Guten Morgen');
+  assert.equal(spoken[0].rate, .75);
+  spoken[0].onend({});
+  lateEvents(spoken[0]);
+  assert.equal(spoken.length, 1);
+  assert.equal(controller.active, false);
+  assert.equal(controller.status, 'idle');
+});

@@ -800,3 +800,6 @@ select:disabled {
     outline:2px solid Highlight;
   }
 }
+
+/* Reader words remain selectable for explicit pronunciation actions. */
+.reader .word { user-select: text; }
