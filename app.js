@@ -83,15 +83,25 @@ function cancelGap() {
   $("your-turn").hidden = true;
 }
 function renderSpeechState({ status, kind }) {
-  $("stop-pronunciation").hidden = kind !== "pronunciation" || ["idle", "error"].includes(status);
+  $("stop-pronunciation").hidden =
+    kind !== "pronunciation" || ["idle", "error"].includes(status);
   if (kind === "pronunciation") return;
   const labels = {
-    idle: "Play", starting: "Cancel start", speaking: "Pause",
-    pausing: "Cancel pause", paused: "Resume", resuming: "Cancel resume", error: "Play",
+    idle: "Play",
+    starting: "Cancel start",
+    speaking: "Pause",
+    pausing: "Cancel pause",
+    paused: "Resume",
+    resuming: "Cancel resume",
+    error: "Play",
   };
   if (kind === "preview") {
-    $("preview-voice").textContent = status === "starting" ? "Cancel sample" :
-      ["idle", "error"].includes(status) ? "Test voice" : "Stop sample";
+    $("preview-voice").textContent =
+      status === "starting"
+        ? "Cancel sample"
+        : ["idle", "error"].includes(status)
+          ? "Test voice"
+          : "Stop sample";
     return;
   }
   if (state.mode !== "tts") return;
@@ -103,13 +113,17 @@ function showWordStatus(status) {
   state.wordStatus = status;
   const messages = {
     idle: "Word highlighting is checked during playback, including voice samples.",
-    checking: "Listening for word events. Sentence highlighting is used until they arrive.",
+    checking:
+      "Listening for word events. Sentence highlighting is used until they arrive.",
     word: "Word events detected in this playback. Word highlighting is available when enabled.",
-    sentence: "No word events received in the completed playback. Sentence highlighting was used; another voice may support words.",
+    sentence:
+      "No word events received in the completed playback. Sentence highlighting was used; another voice may support words.",
   };
   const message = messages[status];
-  if ($("word-status").textContent !== message) $("word-status").textContent = message;
-  if (changed && state.activeSentence >= 0) setActive(state.activeWord, state.activeSentence, false);
+  if ($("word-status").textContent !== message)
+    $("word-status").textContent = message;
+  if (changed && state.activeSentence >= 0)
+    setActive(state.activeWord, state.activeSentence, false);
 }
 function stopSpeech() {
   state.speechToken++;
@@ -197,7 +211,7 @@ async function loadSources() {
     updateSourceHelp();
   } catch {
     $("source-help").textContent =
-      "Website imports require the Python server. You can still paste text and choose a voice or audio file.";
+      "Website imports are unavailable. You can still paste text and choose a voice or audio file.";
     $("content-import").disabled = true;
   }
 }
@@ -284,8 +298,13 @@ function setActive(wordIndex, sentenceIndex, scroll = true) {
   const highlight = $("highlight").value;
   if (highlight === "both" || highlight === "word")
     state.wordElements[wordIndex]?.classList.add("active");
-  if (highlight === "both" || highlight === "sentence" ||
-      (highlight === "word" && state.mode === "tts" && state.wordStatus !== "word"))
+  if (
+    highlight === "both" ||
+    highlight === "sentence" ||
+    (highlight === "word" &&
+      state.mode === "tts" &&
+      state.wordStatus !== "word")
+  )
     state.sentenceElements[sentenceIndex]?.classList.add("active");
   if (
     changed &&
@@ -346,7 +365,8 @@ function renderReader() {
   });
   $("reader").replaceChildren(fragment);
   if (!state.parsed.words.length)
-    $("reader").textContent = `Add ${languageConfig(state.language).name} text to start practicing.`;
+    $("reader").textContent =
+      `Add ${languageConfig(state.language).name} text to start practicing.`;
   $("translation").disabled = state.text !== demo.text;
   if (state.text !== demo.text)
     $("translation").setAttribute("aria-pressed", "false");
@@ -428,14 +448,19 @@ function resetText(text, title) {
   error("");
 }
 function applySoundSettings() {
-  const volume = Number($("volume").value), pitch = Number($("pitch").value);
+  const volume = Number($("volume").value),
+    pitch = Number($("pitch").value);
   audio.volume = volume;
   pronunciation.volume = volume;
   const volumeLabel = volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`;
   $("volume-value").value = volumeLabel;
   $("volume").setAttribute("aria-valuetext", volumeLabel);
-  $("pitch-value").value = `${pitch.toFixed(2)}${pitch === 1 ? " (default)" : ""}`;
-  $("pitch").setAttribute("aria-valuetext", `${pitch.toFixed(2)}${pitch === 1 ? ", default" : ""}`);
+  $("pitch-value").value =
+    `${pitch.toFixed(2)}${pitch === 1 ? " (default)" : ""}`;
+  $("pitch").setAttribute(
+    "aria-valuetext",
+    `${pitch.toFixed(2)}${pitch === 1 ? ", default" : ""}`,
+  );
 }
 function speechSoundOptions() {
   return { volume: Number($("volume").value), pitch: Number($("pitch").value) };
@@ -510,7 +535,9 @@ async function playAudio() {
 }
 function currentVoice() {
   const choice = state.voiceChoices[state.language];
-  return $("voice").value === "auto" ? state.voices[0] : state.voices.find((voice) => voice.voiceURI === choice);
+  return $("voice").value === "auto"
+    ? state.voices[0]
+    : state.voices.find((voice) => voice.voiceURI === choice);
 }
 function speakSentence(index, fromWord = null) {
   pronunciation.pause();
@@ -581,9 +608,14 @@ function speakSentence(index, fromWord = null) {
   try {
     speech.play({
       ...speechSoundOptions(),
-      text: state.text.slice(charStart, end), voice,
-      lang: languageConfig(state.language).locale, rate: Number($("speed").value),
-      onboundary, onerror, onend, onwordstatus: showWordStatus,
+      text: state.text.slice(charStart, end),
+      voice,
+      lang: languageConfig(state.language).locale,
+      rate: Number($("speed").value),
+      onboundary,
+      onerror,
+      onend,
+      onwordstatus: showWordStatus,
     });
   } catch (failure) {
     state.playing = false;
@@ -600,8 +632,11 @@ function togglePlay() {
     return;
   }
   if (state.mode === "audio") return audio.paused ? playAudio() : stop();
-  if (["preview", "pronunciation"].includes(speech.kind)) { stop(); speakSentence(Math.max(0, state.activeSentence)); }
-  else if (["starting", "pausing", "resuming"].includes(speech.status)) stop();
+  if (["preview", "pronunciation"].includes(speech.kind)) {
+    stop();
+    speakSentence(Math.max(0, state.activeSentence));
+  } else if (["starting", "pausing", "resuming"].includes(speech.status))
+    stop();
   else if (speech.status === "speaking") speech.pause();
   else if (speech.paused) speech.resume();
   else speakSentence(Math.max(0, state.activeSentence));
@@ -684,55 +719,78 @@ function setPracticeLanguage(code) {
   state.documentEpoch++;
   state.language = code;
   document.querySelector(`#language-${code}`).checked = true;
-  for (const id of ["reader", "reading-title", "text", "selected-word"]) $(id).lang = code;
+  for (const id of ["reader", "reading-title", "text", "selected-word"])
+    $(id).lang = code;
   $("voice-label").textContent = `${config.name} voice`;
   $("text-label").textContent = `${config.name} text`;
-  $("demo").textContent = `Load ${config.name} demo ↗`;
+  $("demo").textContent = `Load ${config.name} demo`;
   loadVoices();
 }
 function readVoicePreferences() {
   try {
     const saved = JSON.parse(localStorage.getItem(VOICE_STORE) || "{}");
     for (const code of Object.keys(LANGUAGES)) {
-      if (typeof saved?.[code] === "string") state.voiceChoices[code] = saved[code];
+      if (typeof saved?.[code] === "string")
+        state.voiceChoices[code] = saved[code];
     }
   } catch {
-    notice("Voice preferences could not be read. Automatic voice selection is still available.");
+    notice(
+      "Voice preferences could not be read. Automatic voice selection is still available.",
+    );
   }
 }
 function saveVoicePreferences() {
-  try { localStorage.setItem(VOICE_STORE, JSON.stringify(state.voiceChoices)); }
-  catch { notice("Voice preference works for this visit but could not be saved in this browser."); }
+  try {
+    localStorage.setItem(VOICE_STORE, JSON.stringify(state.voiceChoices));
+  } catch {
+    notice(
+      "Voice preference works for this visit but could not be saved in this browser.",
+    );
+  }
 }
 function updateVoiceNote() {
   const config = languageConfig(state.language);
   const voice = currentVoice();
-  const entry = state.voiceEntries.find(item => item.voice === voice);
+  const entry = state.voiceEntries.find((item) => item.voice === voice);
   if (!voice) {
-    $("voice-note").textContent = `No suitable ${config.name} voice is available here. Install a matching system voice, then Refresh voices, or use a recording. Other languages will not be substituted.`;
+    $("voice-note").textContent =
+      `No suitable ${config.name} voice is available here. Install a matching system voice, then Refresh voices, or use a recording. Other languages will not be substituted.`;
     return;
   }
-  const connection = voice.localService ? "On-device voice." : "Online voice: text may be sent to its speech service.";
-  const availability = entry.tier === 1 ? "Only a standard voice is available; install an enhanced/premium voice for more natural speech." : "Best available quality tier in this browser.";
-  $("voice-note").textContent = `${state.voiceChoices[state.language] === "auto" ? "Auto recommends" : "Selected"}: ${voice.name} · ${voice.lang} · ${entry.quality}. ${availability} ${connection} Word highlighting depends on voice support.`;
+  const connection = voice.localService
+    ? "On-device voice."
+    : "Online voice: text may be sent to its speech service.";
+  const availability =
+    entry.tier === 1
+      ? "Only a standard voice is available; install an enhanced/premium voice for more natural speech."
+      : "Best available quality tier in this browser.";
+  $("voice-note").textContent =
+    `${state.voiceChoices[state.language] === "auto" ? "Auto recommends" : "Selected"}: ${voice.name} · ${voice.lang} · ${entry.quality}. ${availability} ${connection} Word highlighting depends on voice support.`;
 }
 function loadVoices() {
   const voices = "speechSynthesis" in window ? speechSynthesis.getVoices() : [];
   state.voiceEntries = bestVoices(voices, state.language);
-  state.voices = state.voiceEntries.map(entry => entry.voice);
+  state.voices = state.voiceEntries.map((entry) => entry.voice);
   const choice = state.voiceChoices[state.language];
   // An unavailable preference is kept for a later voiceschanged event. Auto is
   // used now, and a voice from a different language is never substituted.
-  const available = choice === "auto" || state.voices.some(voice => voice.voiceURI === choice);
+  const available =
+    choice === "auto" ||
+    state.voices.some((voice) => voice.voiceURI === choice);
   const auto = document.createElement("option");
   auto.value = "auto";
-  auto.textContent = state.voices.length ? "Auto · best available" : "No matching voice available";
-  $("voice").replaceChildren(auto, ...state.voiceEntries.map(entry => {
-    const option = document.createElement("option");
-    option.value = entry.voice.voiceURI;
-    option.textContent = `${entry.voice.name} · ${entry.voice.lang} · ${entry.quality}`;
-    return option;
-  }));
+  auto.textContent = state.voices.length
+    ? "Auto · best available"
+    : "No matching voice available";
+  $("voice").replaceChildren(
+    auto,
+    ...state.voiceEntries.map((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.voice.voiceURI;
+      option.textContent = `${entry.voice.name} · ${entry.voice.lang} · ${entry.quality}`;
+      return option;
+    }),
+  );
   $("voice").value = available ? choice : "auto";
   $("voice").disabled = !state.voices.length;
   $("preview-voice").disabled = !state.voices.length;
@@ -747,36 +805,54 @@ function loadVoices() {
 function captureReaderSelection() {
   const selection = window.getSelection();
   if (!selection || !selection.rangeCount || selection.isCollapsed) {
-    if (!["speak-selection", "stop-pronunciation"].includes(document.activeElement?.id)) {
+    if (
+      !["speak-selection", "stop-pronunciation"].includes(
+        document.activeElement?.id,
+      )
+    ) {
       state.selectionText = "";
       $("speak-selection").disabled = true;
     }
     return false;
   }
   const range = selection.getRangeAt(0);
-  const inTranslation = node => (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest(".translation");
-  if (!$("reader").contains(range.startContainer) || !$("reader").contains(range.endContainer) ||
-      inTranslation(range.startContainer) || inTranslation(range.endContainer)) {
+  const inTranslation = (node) =>
+    (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest(
+      ".translation",
+    );
+  if (
+    !$("reader").contains(range.startContainer) ||
+    !$("reader").contains(range.endContainer) ||
+    inTranslation(range.startContainer) ||
+    inTranslation(range.endContainer)
+  ) {
     state.selectionText = "";
   } else {
     const fragment = range.cloneContents();
-    fragment.querySelectorAll(".translation").forEach(node => node.remove());
+    fragment.querySelectorAll(".translation").forEach((node) => node.remove());
     state.selectionText = fragment.textContent.trim();
   }
   $("speak-selection").disabled = !state.selectionText;
   return Boolean(state.selectionText);
 }
 function speakPronunciation(text) {
-  if (!text?.trim()) throw new Error("Select text in the reader or choose a word first.");
+  if (!text?.trim())
+    throw new Error("Select text in the reader or choose a word first.");
   const voice = currentVoice();
-  if (!voice) throw new Error(`No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice and refresh voices.`);
+  if (!voice)
+    throw new Error(
+      `No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice and refresh voices.`,
+    );
   stop();
   speech.play({
     ...speechSoundOptions(),
-    text, voice, lang: languageConfig(state.language).locale,
-    rate: Number($("speed").value), kind: "pronunciation",
+    text,
+    voice,
+    lang: languageConfig(state.language).locale,
+    rate: Number($("speed").value),
+    kind: "pronunciation",
     onwordstatus: showWordStatus,
-    onerror: event => {
+    onerror: (event) => {
       if (!["interrupted", "canceled"].includes(event.error))
         error("Pronunciation could not play. Try another voice.");
     },
@@ -784,22 +860,34 @@ function speakPronunciation(text) {
   error("");
 }
 function previewVoice() {
-  if (speech.kind === "preview") { stop(); return; }
+  if (speech.kind === "preview") {
+    stop();
+    return;
+  }
   const voice = currentVoice();
-  if (!voice) throw new Error("No matching voice is available. Refresh voices or use a recording.");
+  if (!voice)
+    throw new Error(
+      "No matching voice is available. Refresh voices or use a recording.",
+    );
   stop();
   $("preview-voice").textContent = "Stop sample";
   try {
     speech.play({
       ...speechSoundOptions(),
-      text: languageConfig(state.language).sample, voice,
-      lang: languageConfig(state.language).locale, kind: "preview",
+      text: languageConfig(state.language).sample,
+      voice,
+      lang: languageConfig(state.language).locale,
+      kind: "preview",
       onwordstatus: showWordStatus,
-      onend: () => { $("preview-voice").textContent = "Test voice"; },
-      onerror: event => {
+      onend: () => {
+        $("preview-voice").textContent = "Test voice";
+      },
+      onerror: (event) => {
         $("preview-voice").textContent = "Test voice";
         if (!["interrupted", "canceled"].includes(event.error))
-          error("The voice sample could not play. Try another voice or a recording.");
+          error(
+            "The voice sample could not play. Try another voice or a recording.",
+          );
       },
     });
   } catch (failure) {
@@ -900,15 +988,18 @@ function wordDialog(index = state.selectedWord) {
 }
 
 document.addEventListener("selectionchange", captureReaderSelection);
-on("speak-word", "click", () => speakPronunciation(state.parsed.words[state.selectedWord]?.text));
+on("speak-word", "click", () =>
+  speakPronunciation(state.parsed.words[state.selectedWord]?.text),
+);
 on("speak-selection", "click", () => speakPronunciation(state.selectionText));
 on("stop-pronunciation", "click", stop);
 on("speak-dialog-word", "click", () => {
   try {
     speakPronunciation(state.parsed.words[state.selectedWord]?.text);
     $("word-dialog").close();
+  } catch (failure) {
+    $("word-error").textContent = failure.message;
   }
-  catch (failure) { $("word-error").textContent = failure.message; }
 });
 on("play", "click", togglePlay);
 on("previous", "click", () =>
@@ -951,7 +1042,10 @@ on("seek", "input", () => {
 for (const id of ["volume", "pitch"]) {
   on(id, "input", () => {
     applySoundSettings();
-    if (speech.active) { stop(); notice("Speech settings updated. Press Play or test the voice again."); }
+    if (speech.active) {
+      stop();
+      notice("Speech settings updated. Press Play or test the voice again.");
+    }
   });
 }
 on("reset-pitch", "click", () => {
@@ -994,29 +1088,50 @@ on("voice", "change", () => {
   else if (state.mode === "tts" && speech.active) stopSpeech();
 });
 on("preview-voice", "click", previewVoice);
-on("refresh-voices", "click", () => { loadVoices(); });
+on("refresh-voices", "click", () => {
+  loadVoices();
+});
 for (const code of Object.keys(LANGUAGES)) {
   on(`language-${code}`, "change", () => {
     const oldDemo = DEMOS[state.language];
-    const draft = $("text").value, draftTitle = $("title").value;
-    const replaceDemo = state.text === oldDemo.text && draft === state.text && !state.source && !audio.hasAttribute("src");
+    const draft = $("text").value,
+      draftTitle = $("title").value;
+    const replaceDemo =
+      state.text === oldDemo.text &&
+      draft === state.text &&
+      !state.source &&
+      !audio.hasAttribute("src");
     setPracticeLanguage(code);
     if (replaceDemo) {
       const demo = DEMOS[code];
-      setMode("tts"); resetText(demo.text, demo.title);
-      notice(`${languageConfig(code).name} demo loaded. Test the recommended voice, then press Play.`);
+      setMode("tts");
+      resetText(demo.text, demo.title);
+      notice(
+        `${languageConfig(code).name} demo loaded. Test the recommended voice, then press Play.`,
+      );
     } else {
       const parsed = parseText(state.text, code);
-      const sameWords = parsed.words.length === state.parsed.words.length && parsed.words.every((word,index) => word.text === state.parsed.words[index].text);
+      const sameWords =
+        parsed.words.length === state.parsed.words.length &&
+        parsed.words.every(
+          (word, index) => word.text === state.parsed.words[index].text,
+        );
       state.parsed = parsed;
       if (!sameWords) {
-        state.timings = estimate(parsed.words, state.duration || parsed.words.length * .48);
-        state.timingSource = "estimated"; state.anchors.clear();
+        state.timings = estimate(
+          parsed.words,
+          state.duration || parsed.words.length * 0.48,
+        );
+        state.timingSource = "estimated";
+        state.anchors.clear();
       }
       renderReader();
-      $("text").value = draft; $("title").value = draftTitle;
+      $("text").value = draft;
+      $("title").value = draftTitle;
       refreshTimeline(audio.currentTime);
-      notice(`Practice language changed to ${languageConfig(code).name}. Your text and recording are unchanged; this does not translate text.${!sameWords ? " Word boundaries changed, so timings were reset." : ""}`);
+      notice(
+        `Practice language changed to ${languageConfig(code).name}. Your text and recording are unchanged; this does not translate text.${!sameWords ? " Word boundaries changed, so timings were reset." : ""}`,
+      );
     }
   });
 }
@@ -1040,7 +1155,9 @@ on("demo", "click", () => {
   setMode("tts");
   const demo = DEMOS[state.language];
   resetText(demo.text, demo.title);
-  notice(`${languageConfig(state.language).name} demo loaded. Test the recommended voice, then press Play.`);
+  notice(
+    `${languageConfig(state.language).name} demo loaded. Test the recommended voice, then press Play.`,
+  );
 });
 on("reader", "click", async (event) => {
   if (captureReaderSelection()) return;
@@ -1266,8 +1383,14 @@ on("content-form", "submit", async (event) => {
       throw new Error(
         `Import failed (HTTP ${response.status}). ${document?.error || "The server could not import this page. Try again or paste its text manually."}`,
       );
-    if (!document || typeof document.text !== "string" || !Array.isArray(document.segments))
-      throw new Error("The server returned an invalid import response. Try again or paste the text manually.");
+    if (
+      !document ||
+      typeof document.text !== "string" ||
+      !Array.isArray(document.segments)
+    )
+      throw new Error(
+        "The server returned an invalid import response. Try again or paste the text manually.",
+      );
     const importLanguage = document.language ?? "hu";
     languageConfig(importLanguage);
     const languageChanged = importLanguage !== state.language;
@@ -1297,15 +1420,23 @@ on("content-form", "submit", async (event) => {
     refreshTimeline();
     notice(
       (document.notice ||
-        `Imported “${document.title}” from ${source.name}. ${document.segments.length ? `${document.segments.length} publisher segments; words inside each are estimated.` : "Word positions are estimated."}`) + (languageChanged ? ` Practice language switched to ${languageConfig(importLanguage).name}.` : ""),
+        `Imported “${document.title}” from ${source.name}. ${document.segments.length ? `${document.segments.length} publisher segments; words inside each are estimated.` : "Word positions are estimated."}`) +
+        (languageChanged
+          ? ` Practice language switched to ${languageConfig(importLanguage).name}.`
+          : ""),
     );
     error("");
   } catch (failure) {
     if (epoch === state.documentEpoch) {
       if (failure.name === "TimeoutError")
-        importFailure = "Import failed. The website took too long to respond. Try again or paste its text manually.";
-      else if (failure instanceof TypeError && /fetch|network|load/i.test(failure.message))
-        importFailure = "Import failed. Could not connect to the import server. Check that the Python server is running, then try again.";
+        importFailure =
+          "Import failed. The website took too long to respond. Try again or paste its text manually.";
+      else if (
+        failure instanceof TypeError &&
+        /fetch|network|load/i.test(failure.message)
+      )
+        importFailure =
+          "Import failed. Could not reach the import service. Check your connection and try again.";
       else
         importFailure = failure.message.startsWith("Import failed")
           ? failure.message
