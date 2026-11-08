@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Hear &amp; Read</title>
+  <desc id="desc">An open book with sound waves and an amber highlighted line.</desc>
+  <rect width="64" height="64" rx="16" fill="#215A45"/>
+  <path d="M12 24c7-2 14-1 20 3 6-4 13-5 20-3v25c-7-2-14-1-20 3-6-4-13-5-20-3V24Z" fill="#FFF8EC"/>
+  <path d="M32 28v22" stroke="#215A45" stroke-width="2"/>
+  <path d="M18 32h7m-7 6h7m-7 6h7m14-12h7m-7 12h7" stroke="#215A45" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="37" y="35" width="12" height="6" rx="2" fill="#F4A340"/>
+  <path d="M24 16v3m8-8v8m8-3v3" stroke="#F4A340" stroke-width="3" stroke-linecap="round"/>
+</svg>

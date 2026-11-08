@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hear &amp; Read — Listen. Follow. Repeat.</title>
+  <meta name="description" content="Practice Hungarian, Spanish and German with audio and highlighted text. Choose a recommended browser voice, slow recordings, and loop sentences.">
+  <meta name="application-name" content="Hear &amp; Read">
+  <meta name="theme-color" content="#FFF8EC" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1B1D19" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Hear &amp; Read">
+  <meta property="og:title" content="Hear &amp; Read — Listen. Follow. Repeat.">
+  <meta property="og:description" content="Your audio. Your text. Your pace. Practice listening with highlighted words, sentence loops, and editable timings.">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="assets/social-card.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Hear &amp; Read. Listen. Follow. Repeat. Your audio. Your text. Your pace.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hear &amp; Read — Listen. Follow. Repeat.">
+  <meta name="twitter:description" content="Practice listening with your own audio, highlighted text, and sentence loops.">
+  <meta name="twitter:image" content="assets/social-card.png">
+  <meta name="twitter:image:alt" content="Hear &amp; Read. Listen. Follow. Repeat.">
+  <!-- Set canonical, og:url and absolute social-image URLs once the public web URL is known. -->
+  <link rel="icon" type="image/svg+xml" sizes="any" href="assets/favicon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Hear & Read",
+    "alternateName": "hear-and-read",
+    "description": "Practice Hungarian, Spanish and German with recommended browser voices, audio, highlighted text, sentence loops, and editable word timings. Hungarian website imports are also supported.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires a modern browser with JavaScript and HTML audio. Browser speech requires an available voice matching the practice language.",
+    "softwareRequirements": "Python backend required for website imports.",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "featureList": ["Audio and text listening practice", "Word and sentence highlighting", "Sentence looping", "Adjustable playback speed", "Editable word timings", "Session import and export"]
+  }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#reading-title">Skip to reader</a>
+  <header class="masthead">
+    <img class="brand-mark" src="assets/logo.svg" width="64" height="64" alt="">
+    <div><p class="eyebrow">Listen. Follow. Repeat.</p><h1>Hear <span>&amp;</span> Read</h1></div>
+    <span class="local-badge">Personal practice</span>
+  </header>
+  <main>
+    <section class="intro"><div><h2>Hear it. Follow it. Make it yours.</h2><p>Practice Hungarian, Spanish or German at your own pace. Follow the words, repeat a sentence, then try it without the text.</p></div><button id="demo" class="quiet">Load Hungarian demo ↗</button></section>
+    <p id="notice" role="status"></p><p id="error" role="alert"></p>
+    <div class="workspace">
+      <section class="card reader-card">
+        <div class="section-heading"><div><p class="eyebrow">Now reading</p><h2 id="reading-title" tabindex="-1" lang="hu">Egy reggel Budapesten</h2></div><span id="timing-badge" class="badge">Browser voice</span></div>
+        <p id="timing-note" class="muted"></p>
+        <div id="content-credit" class="content-credit" hidden>
+          <p><span id="credit-name"></span> · <a id="credit-link" target="_blank" rel="noopener noreferrer">Original page (opens in new tab)</a><span id="credit-license-wrap" hidden> · <a id="credit-license" target="_blank" rel="noopener noreferrer"></a> · <a id="credit-history" target="_blank" rel="noopener noreferrer">Contributors (opens in new tab)</a></span></p>
+          <p id="pronunciation-note" hidden>Word pronunciation only. This clip does not narrate the definitions; use Browser voice to hear the full text.</p>
+          <audio id="pronunciation" controls preload="none" aria-label="Word pronunciation" hidden></audio>
+        </div>
+        <div class="reader-options">
+          <label for="highlight">Highlight<select id="highlight" name="highlight"><option value="both">Word + sentence</option><option value="word">Word</option><option value="sentence">Sentence</option><option value="off">Off</option></select></label>
+          <label for="hide-text">Text visibility<select id="hide-text" name="hide-text"><option value="off">Show text</option><option value="blur">Blur to listen first</option><option value="hidden">Hide until finished</option></select></label>
+          <button id="translation" aria-pressed="false">Show English</button>
+        </div>
+        <p id="your-turn" class="turn" role="status" hidden>Your turn — repeat what you heard.</p>
+        <p id="sync-hint" class="turn" hidden>Sync is on. Click a word when you hear it to pin its start time.</p>
+        <div id="listening-test" hidden><p>Listen first. The text will appear when playback finishes.</p><button id="reveal">Reveal text</button></div>
+        <div id="reader" class="reader" lang="hu"></div>
+        <p class="reader-help">Click a word to jump. Use Word options to copy it or edit its timing.</p>
+        <div class="transport">
+          <label for="seek">Recording position</label><input id="seek" type="range" min="0" max="1" step=".01" value="0">
+          <div class="times"><span id="elapsed">0:00</span><span id="duration">0:00</span></div>
+          <div class="playback"><button id="previous" aria-label="Previous sentence">← Previous</button><button id="play" class="primary">Play</button><button id="next" aria-label="Next sentence">Next →</button><button id="repeat" aria-pressed="false">Repeat sentence</button></div>
+          <div class="speed-row"><label for="speed">Speed <output id="speed-value" for="speed">1.00×</output></label><input id="speed" type="range" min=".5" max="1.5" step=".05" value="1"></div>
+          <div class="checks"><label for="follow"><input id="follow" type="checkbox" checked>Follow words</label><label for="scroll"><input id="scroll" type="checkbox" checked>Auto-scroll</label><label for="shadow"><input id="shadow" type="checkbox">Shadowing · 1.8s pause</label></div>
+          <p class="muted small">Shortcuts outside controls: Space play/pause · ← / → sentence</p>
+        </div>
+      </section>
+      <aside class="sidebar" aria-label="Practice setup">
+        <section class="card">
+          <div class="section-heading"><h2>1. Choose your content</h2><span class="step">Discover</span></div>
+          <fieldset class="practice-languages"><legend>Practice language</legend><label for="language-hu"><input id="language-hu" type="radio" name="practice-language" value="hu" checked><span lang="hu">Magyar</span><small>Hungarian</small></label><label for="language-es"><input id="language-es" type="radio" name="practice-language" value="es"><span lang="es">Español</span><small>Spanish</small></label><label for="language-de"><input id="language-de" type="radio" name="practice-language" value="de"><span lang="de">Deutsch</span><small>German</small></label></fieldset>
+          <p class="muted small" id="language-help">Sets pronunciation and text language, not translation. Paste text in your selected language or load its demo.</p>
+          <p class="muted small">Import from a supported website, or paste your own text below. Each source offers different text and audio.</p>
+          <form id="content-form" action="/api/import" method="post">
+            <fieldset id="content-sources" class="content-sources"><legend>Website</legend><label for="content-auto"><input id="content-auto" type="radio" name="content-source" value="auto" checked><span>Detect from URL</span></label></fieldset>
+            <p id="source-help" class="muted small">Loading supported websites…</p>
+            <label for="content-url">Page or article URL (required)</label>
+            <input id="content-url" name="url" type="url" required maxlength="4096" placeholder="https://…" aria-describedby="source-help content-error" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
+            <p id="content-error" class="import-error" role="alert" tabindex="-1"></p>
+            <div class="actions"><button id="content-import" class="secondary" type="submit">Import content</button><button id="source-example" type="button" disabled>Use an example</button></div>
+          </form>
+          <p class="muted small">Website imports currently provide Hungarian text and switch practice to Hungarian. For Spanish or German, paste text or load a demo.</p>
+        </section>
+        <section class="card">
+          <div class="section-heading"><h2>2. Choose how to listen</h2><span class="step">Listen</span></div>
+          <fieldset class="source-picker"><legend>Audio source</legend><label for="source-tts"><input id="source-tts" name="source" type="radio" value="tts" checked>Browser voice</label><label for="source-audio"><input id="source-audio" name="source" type="radio" value="audio">Original recording</label></fieldset>
+          <div id="tts-panel">
+            <label id="voice-label" for="voice">Hungarian voice</label><select id="voice" name="voice" aria-describedby="voice-note voice-quality-help"><option value="auto">Auto · recommended voice</option></select>
+            <p id="voice-note" class="muted small" role="status"></p>
+            <div class="actions"><button id="preview-voice" type="button" disabled>Test voice</button><button id="refresh-voices" type="button">Refresh voices</button></div>
+            <p id="voice-quality-help" class="muted small">Auto selects the best available voice in this browser. Only the highest available quality tier is offered. Voice quality varies by browser and device.</p>
+            <details><summary>Improve voice quality</summary><p class="muted small">Download an enhanced or premium voice for your language in your device's speech/accessibility settings, then refresh voices here. Browser speech may expose fewer voices than your device or a browser's built-in Read Aloud feature.</p><p class="muted small">Natural/neural labels come from the voice provider; they are not a measured quality guarantee. If no suitable voice is available, use a recording. Some voices do not provide word highlighting.</p></details>
+          </div>
+          <div id="audio-panel" hidden>
+            <details><summary>Use your own audio</summary><label for="audio-file">Choose an audio file</label><input id="audio-file" type="file" accept="audio/*"><form id="audio-form"><label for="audio-url">Or an HTTPS audio URL</label><input id="audio-url" type="url" placeholder="https://…/audio.mp3"><button type="submit">Load recording</button></form></details>
+            <p id="audio-name" class="muted small">No recording selected.</p>
+            <audio id="audio" controls preload="none"></audio>
+          </div>
+        </section>
+        <section class="card">
+          <div class="section-heading"><h2>3. Make it your text</h2><span class="step">Read</span></div>
+          <label for="title">Practice title</label><input id="title" value="Egy reggel Budapesten" maxlength="200">
+          <label id="text-label" for="text">Hungarian text</label><textarea id="text" lang="hu" rows="6" maxlength="100000" aria-describedby="language-help"></textarea>
+          <button id="apply-text">Apply text</button><p id="word-count" class="muted small"></p>
+          <p class="muted small">Changing the text resets its word timings. Local audio files stay in your browser.</p>
+        </section>
+        <section class="card">
+          <div class="section-heading"><h2>4. Keep your practice</h2><span class="step">Repeat</span></div>
+          <div class="actions"><button id="save" class="secondary">Save session</button><button id="export-session">Export session</button></div>
+          <label for="session-file">Import a session JSON file</label><input id="session-file" type="file" accept=".json,application/json">
+          <ul id="sessions" class="sessions"></ul><p class="muted small">Saved in this browser. Export a session to keep a portable copy. Audio files must be selected again after reloading.</p>
+        </section>
+      </aside>
+    </div>
+    <section class="card editor">
+      <div class="section-heading"><div><p class="eyebrow">Make the words follow your recording</p><h2>Sync editor</h2></div><button id="sync" aria-pressed="false">Sync mode</button></div>
+      <p>Import word timings, or play your recording and click words as you hear them. Your pins stay fixed while the words between them are redistributed.</p>
+      <div class="actions"><button id="distribute">Estimate all timings</button><button id="export-timings">Export timings</button><button id="word-options">Word options</button><span id="pin-count" class="muted">0 pins</span></div>
+      <details><summary>Import or edit word timings</summary><p id="json-help">One entry per word, in text order: <code>[{"word":"Jó","start":0,"end":0.4}, …]</code>. Include every occurrence of repeated words.</p><label for="timings-json">Timings JSON</label><textarea id="timings-json" rows="5" aria-describedby="json-help"></textarea><label for="timings-file">Or choose a timings file</label><input id="timings-file" type="file" accept=".json,application/json"><button id="import-timings">Apply timings</button></details>
+      <details><summary>How highlighting works</summary><div class="explanation"><p><b>Browser voice:</b> highlighting follows word-boundary events when the chosen voice provides them. If it does not, the current sentence stays highlighted. Voice availability depends on your device.</p><p><b>Original recordings:</b> words are estimated from text length until you import or manually adjust word timestamps. JW.org imports use publisher verse/paragraph boundaries where available, with estimated words inside each segment.</p><p><b>Imported timestamps:</b> the player uses the times you provide. Accuracy depends on how those timestamps were made; there is no fixed error guarantee. Forced-alignment output must match this exact text and recording.</p><p>English translations are supplied only for the built-in demos. They are not generated for imported text.</p></div></details>
+    </section>
+  </main>
+  <dialog id="word-dialog" aria-labelledby="word-dialog-title"><form method="dialog"><div class="section-heading"><h2 id="word-dialog-title">Word options</h2><button value="close" aria-label="Close word options">Close</button></div></form><p id="selected-word" lang="hu"></p><label for="edit-word">Word number</label><input id="edit-word" type="number" min="1" value="1"><div class="edit-times"><label for="word-start">Start (seconds)<input id="word-start" type="number" min="0" step=".001"></label><label for="word-end">End (seconds)<input id="word-end" type="number" min="0" step=".001"></label></div><p id="word-error" role="alert"></p><div class="actions"><button id="apply-word">Apply timing</button><button id="repeat-word-sentence">Play sentence</button><button id="copy-word">Copy word</button></div></dialog>
+  <footer>Hear &amp; Read <span>Listen. Follow. Repeat.</span></footer>
+</body>
+</html>
