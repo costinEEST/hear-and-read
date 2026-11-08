@@ -20,7 +20,7 @@ export function createSpeechPlayback({
     pause() { if (current) synthesis.pause(); },
     resume() { if (current) synthesis.resume(); },
     play({ text, voice, lang, rate = 1, kind = 'narration',
-      onboundary, onstart, onpause, onresume, onend, onerror }) {
+      onboundary, onstart, onpause, onresume, onend, onerror, onwordstatus }) {
       if (!available) throw new Error('Speech synthesis is unavailable. Use an original recording instead.');
       if (!voice) throw new Error('Select an available matching voice first.');
       stop();
@@ -30,12 +30,22 @@ export function createSpeechPlayback({
       utterance.lang = voice.lang || lang;
       utterance.rate = rate;
       current = { utterance, kind };
+      let wordObserved = false;
+      onwordstatus?.('checking');
       for (const [name, callback] of Object.entries({
         boundary: onboundary, start: onstart, pause: onpause, resume: onresume,
         end: onend, error: onerror,
       })) {
         utterance[`on${name}`] = event => {
           if (token !== generation || current?.utterance !== utterance) return;
+          if (name === 'boundary') {
+            // A sentence event (even at index zero) is not evidence of word support.
+            const validWord = event.name === 'word' && Number.isInteger(event.charIndex)
+              && event.charIndex >= 0 && event.charIndex < text.length;
+            if (!validWord) return;
+            if (!wordObserved) { wordObserved = true; onwordstatus?.('word'); }
+          }
+          if (name === 'end' && !wordObserved) onwordstatus?.('sentence');
           if (name === 'end' || name === 'error') current = null;
           callback?.(event);
         };

@@ -104,6 +104,7 @@
           <fieldset class="source-picker"><legend>Audio source</legend><label for="source-tts"><input id="source-tts" name="source" type="radio" value="tts" checked>Browser voice</label><label for="source-audio"><input id="source-audio" name="source" type="radio" value="audio">Original recording</label></fieldset>
           <div id="tts-panel">
             <label id="voice-label" for="voice">Hungarian voice</label><select id="voice" name="voice" aria-describedby="voice-note voice-quality-help"><option value="auto">Auto · recommended voice</option></select>
+            <p id="word-status" class="muted small">Word highlighting is checked during playback, including voice samples.</p>
             <p id="voice-note" class="muted small" role="status"></p>
             <div class="actions"><button id="preview-voice" type="button" disabled>Test voice</button><button id="refresh-voices" type="button">Refresh voices</button></div>
             <p id="voice-quality-help" class="muted small">Auto selects the best available voice in this browser. Only the highest available quality tier is offered. Voice quality varies by browser and device.</p>

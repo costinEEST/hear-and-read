@@ -41,6 +41,7 @@ const state = {
   playing: false,
   voices: [],
   speechToken: 0,
+  wordStatus: "idle",
   timer: null,
   raf: null,
   objectUrl: "",
@@ -80,9 +81,23 @@ function cancelGap() {
   state.timer = null;
   $("your-turn").hidden = true;
 }
+function showWordStatus(status) {
+  const changed = state.wordStatus !== status;
+  state.wordStatus = status;
+  const messages = {
+    idle: "Word highlighting is checked during playback, including voice samples.",
+    checking: "Listening for word events. Sentence highlighting is used until they arrive.",
+    word: "Word events detected in this playback. Word highlighting is available when enabled.",
+    sentence: "No word events received in the completed playback. Sentence highlighting was used; another voice may support words.",
+  };
+  const message = messages[status];
+  if ($("word-status").textContent !== message) $("word-status").textContent = message;
+  if (changed && state.activeSentence >= 0) setActive(state.activeWord, state.activeSentence, false);
+}
 function stopSpeech() {
   state.speechToken++;
   speech.stop();
+  showWordStatus("idle");
   $("preview-voice").textContent = "Test voice";
 }
 function stop() {
@@ -251,7 +266,8 @@ function setActive(wordIndex, sentenceIndex, scroll = true) {
   const highlight = $("highlight").value;
   if (highlight === "both" || highlight === "word")
     state.wordElements[wordIndex]?.classList.add("active");
-  if (highlight === "both" || highlight === "sentence")
+  if (highlight === "both" || highlight === "sentence" ||
+      (highlight === "word" && state.mode === "tts" && state.wordStatus !== "word"))
     state.sentenceElements[sentenceIndex]?.classList.add("active");
   if (
     changed &&
@@ -530,7 +546,7 @@ function speakSentence(index, fromWord = null) {
     speech.play({
       text: state.text.slice(charStart, end), voice,
       lang: languageConfig(state.language).locale, rate: Number($("speed").value),
-      onboundary, onerror, onend,
+      onboundary, onerror, onend, onwordstatus: showWordStatus,
     });
   } catch (failure) {
     state.playing = false;
@@ -705,6 +721,7 @@ function previewVoice() {
     speech.play({
       text: languageConfig(state.language).sample, voice,
       lang: languageConfig(state.language).locale, kind: "preview",
+      onwordstatus: showWordStatus,
       onend: () => { $("preview-voice").textContent = "Test voice"; },
       onerror: event => {
         $("preview-voice").textContent = "Test voice";

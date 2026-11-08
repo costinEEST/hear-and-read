@@ -26,7 +26,7 @@ test('narration configures locale/rate and forwards lifecycle events until compl
   assert.equal(controller.kind, 'narration');
   assert.equal(spoken[0].lang, 'es-MX');
   assert.equal(spoken[0].rate, .75);
-  spoken[0].onstart({}); spoken[0].onboundary({ charIndex: 2 }); spoken[0].onend({});
+  spoken[0].onstart({}); spoken[0].onboundary({ name: 'word', charIndex: 2 }); spoken[0].onend({});
   spoken[0].onboundary({ charIndex: 4 });
   assert.deepEqual(events, ['start', 2, 'end']);
   assert.equal(controller.active, false);
@@ -72,4 +72,36 @@ test('missing APIs and synchronous engine failures leave no retained utterance',
   synthesis.speak = () => { throw new Error('engine failed'); };
   assert.throws(() => controller.play({ text: 'Hi', voice }), /engine failed/);
   assert.equal(controller.active, false);
+});
+
+
+test('word support requires a valid named word event and reports once per playback', () => {
+  const { controller, spoken } = fixture();
+  const statuses = [], boundaries = [];
+  controller.play({ text: 'Hola mundo', voice,
+    onwordstatus: s => statuses.push(s), onboundary: e => boundaries.push(e.charIndex) });
+  for (const event of [{ name: 'sentence', charIndex: 0 }, { charIndex: 0 },
+    { name: 'word', charIndex: -1 }, { name: 'word', charIndex: 99 },
+    { name: 'word', charIndex: NaN }]) spoken[0].onboundary(event);
+  assert.deepEqual(statuses, ['checking']);
+  assert.deepEqual(boundaries, []);
+  spoken[0].onboundary({ name: 'word', charIndex: 0 });
+  spoken[0].onboundary({ name: 'word', charIndex: 5 });
+  spoken[0].onend({});
+  assert.deepEqual(statuses, ['checking', 'word']);
+  assert.deepEqual(boundaries, [0, 5]);
+});
+
+test('missing events are reported only after completion, never from cancellation or errors', () => {
+  const { controller, spoken } = fixture();
+  const statuses = [];
+  const play = () => controller.play({ text: 'Hallo.', voice, onwordstatus: s => statuses.push(s) });
+  play(); controller.pause(); controller.resume();
+  assert.deepEqual(statuses, ['checking']);
+  controller.stop(); spoken[0].onend({});
+  assert.deepEqual(statuses, ['checking']);
+  play(); spoken[1].onerror({ error: 'network' });
+  assert.deepEqual(statuses, ['checking', 'checking']);
+  play(); spoken[2].onboundary({ name: 'sentence', charIndex: 0 }); spoken[2].onend({});
+  assert.deepEqual(statuses, ['checking', 'checking', 'checking', 'sentence']);
 });
