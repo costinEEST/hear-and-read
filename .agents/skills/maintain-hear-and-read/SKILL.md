@@ -52,7 +52,7 @@ Keep content-source selection independent of browser speech/full-text audio. Reg
 
 ## Validate the affected behavior
 
-- For JavaScript timing/parsing/session changes, run `npm run test:browser-logic`; use `node --check app.js` when changing the browser module. Node 22.12+ runs tooling; Wrangler runs the local Worker.
+- For JavaScript timing/parsing/session changes, run `npm run test:browser-logic`; use `node --check app.js` when changing the browser module. The Node 26 LTS baseline in `.nvmrc` and `package.json` runs tooling; Wrangler runs the local Worker.
 - For Worker/dependency changes, use the scoped checks in the Worker environment reference.
 - For frontend behavior/layout changes, start Wrangler locally using that reference and use Chrome DevTools MCP when available. Test changed controls and relevant failure paths, inspect console/network, and confirm advancing audio before claiming playback works. An HTTP 200 alone is insufficient.
 - For layout changes, check 320px touch reflow, short landscape and equivalent 200% text sizing. Check keyboard operation, focus restoration, reduced motion and high contrast when relevant. Lighthouse supports these observations; it does not prove every interaction.

@@ -1,10 +1,12 @@
 # Worker environment and commands
 
-Use Node 22.12+ or a newer supported LTS and npm from the repository root. Follow the two-command [README quick start](../../../../README.md#run-locally). `npm ci` installs the committed lockfile; no Python environment is needed.
+Use the Node 26 LTS baseline pinned in `.nvmrc` (currently 26.13.0) and npm from the repository root. With nvm, run `nvm install` and `nvm use` first. Keep the version pin, `package.json` engine constraint and README setup instructions aligned when adopting a new baseline; `.npmrc` enables strict engine checking for dependency installation. Restart running tooling after an upgrade. Follow the two-command [README quick start](../../../../README.md#run-locally). `npm ci` installs the committed lockfile; no Python environment is needed.
 
 ## Runtime and dependencies
 
 The TypeScript backend runs on Cloudflare Workers, using Web APIs and native HTMLRewriter. Keep it independent of Node-only runtime APIs. `entities` decodes raw text chunks after collection; it does not parse HTML or run scripts. Wrangler supplies local workerd and deployment, TypeScript checks backend types, and Vitest with `@cloudflare/vitest-plugin` runs extraction/API tests in workerd. `@cloudflare/workers-types` supplies runtime types.
+
+Check the Cloudflare Vitest plugin's peer dependency range before major Vitest upgrades, then verify the workerd tests; an editor's latest-version indicator does not establish plugin compatibility.
 
 Declare dependency changes intentionally with npm and commit `package.json` and `package-lock.json` together. Do not substitute another package manager or upgrade unrelated packages. Keep `node_modules/`, `dist/`, `.wrangler/`, logs, `.dev.vars`, `.dev.vars.*` and `.env*` secrets untracked. Sanitized `.env.example` and `.dev.vars.example` templates may be tracked.
 
@@ -29,5 +31,7 @@ npm run deploy:check
 `npm test` runs existing browser-logic tests and workerd fixture/API tests. `npm run test:browser-logic` or `npm run test:worker` narrows the scope. `npm run deploy:check` bundles without publishing, and invokes the asset build. Type checking includes backend and Worker tests; Vite raw fixture imports are declared in `tests/worker/fixtures.d.ts`.
 
 Exercise affected endpoints through local Wrangler when changing integration behavior. Fixture tests do not prove live publisher access, audible browser speech or production CPU usage. Preserve manual-paste/retry guidance for declined automated access.
+
+Cloudflare Workers Builds recognizes the root `.nvmrc`; if a build-level `NODE_VERSION` override is configured, keep it consistent with the project pin. This selects the build tool runtime, not the deployed workerd runtime.
 
 Deployment instructions are in [the README](../../../../README.md#deploy-to-cloudflare). Deploying updates the named Worker in the authenticated account; a dry run does not require publication. Use Workers Free for the user's free hosting goal; do not introduce paid bindings or browser automation. Check current platform limits and measure production imports before claiming all pages fit the free CPU allowance.

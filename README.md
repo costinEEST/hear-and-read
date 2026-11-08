@@ -19,12 +19,14 @@ A personal listening practice studio for **Hungarian, Spanish and German**, with
 
 ## Run locally
 
-Install [Node.js](https://nodejs.org/) **22.12+** (or a newer supported LTS), then run these commands from the repository root:
+Install [Node.js](https://nodejs.org/) **26.13.0 or a newer Node 26 LTS release**, then run these commands from the repository root:
 
 ```sh
 npm ci
 npm run dev
 ```
+
+If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm install` and `nvm use` from this directory first; both read the version pinned in `.nvmrc`. After updating Node, restart any running development servers. Update `.nvmrc` and the `package.json` engine requirement together when adopting a newer runtime baseline; `npm ci` does not upgrade Node itself. The project enables npm's strict engine check so dependency installation rejects an unsupported Node version.
 
 Open **http://127.0.0.1:8765** in your browser. Keep the terminal running; press **Ctrl+C** to stop the server. Wrangler runs the Worker locally and prepares the public assets automatically. The browser interface uses no framework or bundler. No Python installation is needed.
 
