@@ -127,3 +127,113 @@ test('lifecycle state waits for start, pause and resume acknowledgements', () =>
   controller.stop(); spoken[1].onstart({});
   assert.equal(controller.status, 'idle');
 });
+
+// Deliver every callback an interrupted engine might still enqueue. None may
+// mutate the replacement, report missing boundaries, or advance its sentence.
+function lateEvents(utterance) {
+  utterance.onstart({});
+  utterance.onpause({});
+  utterance.onresume({});
+  utterance.onboundary({ name: 'word', charIndex: 0 });
+  utterance.onerror({ error: 'interrupted' });
+  utterance.onend({});
+}
+
+test('rapid voice changes retain only the latest voice, locale and callbacks', () => {
+  const { controller, spoken } = fixture();
+  const completed = [], words = [];
+  const voices = [
+    { voiceURI: 'hungarian', lang: 'hu-HU' },
+    { voiceURI: 'spanish', lang: 'es-MX' },
+    { voiceURI: 'german', lang: 'de-DE' },
+  ];
+  for (const selected of voices) {
+    controller.play({ text: 'Sample', voice: selected,
+      onend: () => completed.push(selected.voiceURI),
+      onwordstatus: status => { if (status !== 'checking') words.push(selected.voiceURI); } });
+  }
+  lateEvents(spoken[0]); lateEvents(spoken[1]);
+  assert.equal(controller.status, 'starting');
+  assert.deepEqual(completed, []);
+  assert.deepEqual(words, []);
+  assert.equal(spoken[2].voice, voices[2]);
+  assert.equal(spoken[2].lang, 'de-DE');
+  spoken[2].onstart({});
+  spoken[2].onboundary({ name: 'word', charIndex: 0 });
+  spoken[2].onend({});
+  assert.deepEqual(completed, ['german']);
+  assert.deepEqual(words, ['german']);
+  assert.equal(controller.status, 'idle');
+});
+
+test('narration interrupts a playing preview without running preview completion', () => {
+  const { controller, spoken } = fixture();
+  let previewCallbacks = 0, narrationCompletions = 0;
+  controller.play({ text: 'Preview', voice, kind: 'preview',
+    onend: () => previewCallbacks++, onerror: () => previewCallbacks++ });
+  spoken[0].onstart({});
+  controller.play({ text: 'Narration', voice,
+    onend: () => narrationCompletions++ });
+  spoken[1].onstart({});
+  lateEvents(spoken[0]);
+  assert.equal(controller.kind, 'narration');
+  assert.equal(controller.status, 'speaking');
+  assert.equal(previewCallbacks, 0);
+  spoken[1].onend({});
+  assert.equal(narrationCompletions, 1);
+});
+
+test('preview interrupts paused narration without advancing to the next sentence', () => {
+  const { controller, spoken } = fixture();
+  let nextSentences = 0;
+  controller.play({ text: 'Sentence', voice, onend: () => nextSentences++ });
+  spoken[0].onstart({}); controller.pause();
+  assert.equal(controller.paused, true);
+  controller.play({ text: 'Preview', voice, kind: 'preview' });
+  spoken[1].onstart({});
+  lateEvents(spoken[0]);
+  assert.equal(controller.kind, 'preview');
+  assert.equal(controller.status, 'speaking');
+  assert.equal(nextSentences, 0);
+  controller.stop(); lateEvents(spoken[1]);
+  assert.equal(controller.active, false);
+  assert.equal(controller.status, 'idle');
+});
+
+test('repeated pause/resume cycles keep one utterance and stop cancels late events', () => {
+  const { controller, spoken } = fixture();
+  let completion = 0;
+  controller.play({ text: 'Long sentence', voice, onend: () => completion++ });
+  spoken[0].onstart({});
+  for (let cycle = 0; cycle < 3; cycle++) {
+    controller.pause();
+    assert.equal(controller.status, 'paused');
+    controller.resume();
+    assert.equal(controller.status, 'speaking');
+  }
+  assert.equal(spoken.length, 1);
+  controller.pause(); controller.stop();
+  controller.pause(); controller.resume();
+  lateEvents(spoken[0]);
+  assert.equal(controller.status, 'idle');
+  assert.equal(controller.active, false);
+  assert.equal(completion, 0);
+});
+
+test('word support is re-observed for each utterance and never inherited from a preview', () => {
+  const { controller, spoken } = fixture();
+  const preview = [], narration = [];
+  controller.play({ text: 'Sample', voice, kind: 'preview',
+    onwordstatus: status => preview.push(status) });
+  spoken[0].onstart({});
+  spoken[0].onboundary({ name: 'word', charIndex: 0 });
+  spoken[0].onend({});
+  controller.play({ text: 'Sentence', voice, onwordstatus: status => narration.push(status) });
+  spoken[1].onstart({});
+  spoken[1].onboundary({ name: 'sentence', charIndex: 0 });
+  assert.deepEqual(narration, ['checking']);
+  spoken[1].onend({});
+  assert.deepEqual(preview, ['checking', 'word']);
+  assert.deepEqual(narration, ['checking', 'sentence']);
+  assert.equal(controller.status, 'idle');
+});
