@@ -1,0 +1,33 @@
+[project]
+name = "hear-and-read"
+version = "0.1.0"
+description = "Local Hungarian listening studio with a dependency-free browser interface"
+requires-python = ">=3.12"
+dependencies = [
+    # Source page extraction needs DOM queries and tolerant HTML parsing;
+    # the standard-library HTMLParser is an event parser without those facilities.
+    "beautifulsoup4>=4.14.0",
+    # HTTPX provides explicit timeouts, streaming response limits and redirect control
+    # for publisher imports with a consistent HTTP error API.
+    "httpx>=0.28.1",
+]
+
+[dependency-groups]
+dev = [
+    # Python has no built-in linter/formatter or static type checker.
+    "ruff>=0.14.0",
+    "ty>=0.0.93",
+]
+
+[tool.uv]
+package = false
+preview-features = ["check-command"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ty.src]
+include = ["server.py", "jw_import.py", "wiki_import.py", "content_import.py", "source_http.py", "tests/test_backend.py", "tests/test_sources.py"]
