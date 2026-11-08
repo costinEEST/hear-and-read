@@ -8,8 +8,8 @@ function fixture() {
     paused: false,
     cancel() { spoken.at(-1)?.onerror?.({ error: 'canceled' }); this.paused = false; },
     speak(utterance) { spoken.push(utterance); },
-    pause() { this.paused = true; },
-    resume() { this.paused = false; },
+    pause() { this.paused = true; spoken.at(-1)?.onpause({}); },
+    resume() { this.paused = false; spoken.at(-1)?.onresume({}); },
   };
   class Utterance { constructor(text) { this.text = text; } }
   return { controller: createSpeechPlayback({ synthesis, Utterance }), synthesis, spoken };
@@ -49,6 +49,7 @@ test('pause/resume preserve the utterance and terminal errors release it', () =>
   const { controller, spoken } = fixture();
   let error;
   controller.play({ text: 'Hallo', voice, onerror: e => { error = e.error; } });
+  spoken[0].onstart({});
   controller.pause(); assert.equal(controller.paused, true);
   controller.resume(); assert.equal(controller.paused, false);
   assert.equal(spoken.length, 1);
@@ -104,4 +105,25 @@ test('missing events are reported only after completion, never from cancellation
   assert.deepEqual(statuses, ['checking', 'checking']);
   play(); spoken[2].onboundary({ name: 'sentence', charIndex: 0 }); spoken[2].onend({});
   assert.deepEqual(statuses, ['checking', 'checking', 'checking', 'sentence']);
+});
+
+
+test('lifecycle state waits for start, pause and resume acknowledgements', () => {
+  const events = [], spoken = [];
+  const synthesis = { cancel() {}, speak(u) { spoken.push(u); }, pause() {}, resume() {} };
+  class Utterance { constructor(text) { this.text = text; } }
+  const controller = createSpeechPlayback({ synthesis, Utterance, onstatechange: e => events.push(e) });
+  controller.play({ text: 'Hola', voice });
+  assert.equal(controller.status, 'starting');
+  spoken[0].onstart({}); assert.equal(controller.status, 'speaking');
+  controller.pause(); assert.equal(controller.status, 'pausing');
+  controller.pause(); assert.equal(controller.status, 'pausing');
+  spoken[0].onpause({}); assert.equal(controller.status, 'paused');
+  controller.resume(); assert.equal(controller.status, 'resuming');
+  spoken[0].onresume({}); assert.equal(controller.status, 'speaking');
+  spoken[0].onend({}); assert.equal(controller.status, 'idle');
+  assert.deepEqual(events.map(e => e.status), ['idle', 'starting', 'speaking', 'pausing', 'paused', 'resuming', 'speaking', 'idle']);
+  controller.play({ text: 'Sample', voice, kind: 'preview' });
+  controller.stop(); spoken[1].onstart({});
+  assert.equal(controller.status, 'idle');
 });

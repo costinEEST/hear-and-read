@@ -15,7 +15,7 @@ import { LANGUAGES, DEMOS, bestVoices, languageConfig } from "./speech.js";
 
 import { createSpeechPlayback } from "./speech-playback.js";
 
-const speech = createSpeechPlayback();
+const speech = createSpeechPlayback({ onstatechange: renderSpeechState });
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
 const pronunciation = $("pronunciation");
@@ -80,6 +80,20 @@ function cancelGap() {
   clearTimeout(state.timer);
   state.timer = null;
   $("your-turn").hidden = true;
+}
+function renderSpeechState({ status, kind }) {
+  const labels = {
+    idle: "Play", starting: "Cancel start", speaking: "Pause",
+    pausing: "Cancel pause", paused: "Resume", resuming: "Cancel resume", error: "Play",
+  };
+  if (kind === "preview") {
+    $("preview-voice").textContent = status === "starting" ? "Cancel sample" :
+      ["idle", "error"].includes(status) ? "Test voice" : "Stop sample";
+    return;
+  }
+  if (state.mode !== "tts") return;
+  state.playing = status === "speaking" || status === "pausing";
+  $("play").textContent = labels[status];
 }
 function showWordStatus(status) {
   const changed = state.wordStatus !== status;
@@ -493,8 +507,6 @@ function speakSentence(index, fromWord = null) {
   const firstWord = fromWord ?? sentence.words[0].index;
   const charStart = state.parsed.words[firstWord].start;
   const end = sentence.words.at(-1).start + sentence.words.at(-1).text.length;
-  state.playing = true;
-  $("play").textContent = "Pause";
   setActive(-1, index);
   refreshTimeline(state.timings[firstWord]?.start);
   const onboundary = (event) => {
@@ -563,15 +575,11 @@ function togglePlay() {
     return;
   }
   if (state.mode === "audio") return audio.paused ? playAudio() : stop();
-  if (state.playing) {
-    speech.pause();
-    state.playing = false;
-    $("play").textContent = "Play";
-  } else if (speech.paused) {
-    speech.resume();
-    state.playing = true;
-    $("play").textContent = "Pause";
-  } else speakSentence(Math.max(0, state.activeSentence));
+  if (speech.kind === "preview") { stop(); speakSentence(Math.max(0, state.activeSentence)); }
+  else if (["starting", "pausing", "resuming"].includes(speech.status)) stop();
+  else if (speech.status === "speaking") speech.pause();
+  else if (speech.paused) speech.resume();
+  else speakSentence(Math.max(0, state.activeSentence));
 }
 async function jumpSentence(index, play = true) {
   if (!state.parsed.sentences.length) return;
@@ -703,7 +711,7 @@ function loadVoices() {
   $("voice").value = available ? choice : "auto";
   $("voice").disabled = !state.voices.length;
   $("preview-voice").disabled = !state.voices.length;
-  if (state.mode === "tts" && speech.active && !state.playing) stopSpeech();
+  if (state.mode === "tts" && speech.active && speech.paused) stopSpeech();
   if (!available) {
     const best = state.voices[0];
     $("voice-note").textContent = best
@@ -870,7 +878,7 @@ on("speed", "input", () => {
   $("speed-value").value = `${rate.toFixed(2)}×`;
   audio.defaultPlaybackRate = rate;
   audio.playbackRate = rate;
-  if (state.mode === "tts" && state.playing)
+  if (state.mode === "tts" && speech.kind === "narration" && !speech.paused)
     speakSentence(Math.max(0, state.activeSentence));
 });
 ["highlight", "hide-text"].forEach((id) =>
@@ -895,7 +903,7 @@ on("voice", "change", () => {
   saveVoicePreferences();
   updateVoiceNote();
   if (speech.kind === "preview") stop();
-  if (state.mode === "tts" && state.playing)
+  if (state.mode === "tts" && speech.kind === "narration" && !speech.paused)
     speakSentence(Math.max(0, state.activeSentence));
   else if (state.mode === "tts" && speech.active) stopSpeech();
 });

@@ -65,3 +65,7 @@ Chrome DevTools MCP loaded the controller through the actual server (HTTP 200), 
 ## Observed word-boundary support
 
 On November 8, 2026, twenty JavaScript tests passed, including named-word detection, malformed/sentence event rejection, completion without word events, and cancellation/error isolation. Chrome DevTools MCP observed real German preview speech and word events. Explicit fixture callbacks verified the no-word completion message, sentence fallback in Word mode, ignoring sentence events, transition to active word highlighting, and clearing observations on a language change. The overridden speech method was restored. The status reflowed at 320px with 200% text in dark/reduced-motion mode without horizontal overflow. Observations apply to individual utterances, not a permanent voice capability guarantee.
+
+## Event-driven speech controls
+
+On November 8, 2026, twenty-one JavaScript tests passed, including delayed start/pause/resume acknowledgement and stale-start cancellation. Chrome DevTools MCP verified a real German utterance transitioned from Cancel start to Pause, then Resume after the pause event and Pause after resumption. Language changes restored Play. Explicit fixture engine calls verified canceling startup suppresses late start events, pending pause/resume controls remain cancelable, and a network error restores Play. Browser method overrides were restored. At 320px with 200% text, dark mode and reduced motion, no horizontal overflow was observed. Module syntax and whitespace checks passed.
