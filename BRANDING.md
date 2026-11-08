@@ -42,7 +42,7 @@ Publication URLs must stay aligned:
 
 - Canonical link, `og:url`, JSON-LD `url` and the sitemap entry: `https://hear-and-read.costineest.workers.dev/`.
 - Open Graph and Twitter sharing image: `https://hear-and-read.costineest.workers.dev/assets/social-card.png` (1200×630).
-- `robots.txt`: allows public crawling, excludes `/api/`, and points to `https://hear-and-read.costineest.workers.dev/sitemap.xml`. This is crawler guidance, not access control.
+- `robots.txt`: allows ordinary search crawling, excludes `/api/`, disallows listed AI training/search/user-fetch agents, and points to `https://hear-and-read.costineest.workers.dev/sitemap.xml`. The additional `Content-Signal` preference allows search and declines AI training/input use. These are voluntary crawler preferences, not access control; they do not guarantee exclusion from every AI feature or stop unidentified bots. Keep verified crawler names current using the [Cloudflare documentation](https://developers.cloudflare.com/bots/additional-configurations/managed-robots-txt/) and crawler operators' documentation.
 - `sitemap.xml`: lists only the home page. Practice languages are not translated interface pages; do not add misleading `hreflang` alternates or URLs for imported content or saved sessions.
 
 For a domain change or fork, update `index.html`, `robots.txt`, `sitemap.xml`, this document and the README together. The asset build allowlists the crawler files. After deploying, check the page and PNG are publicly accessible and validate structured data and sharing previews. Search and social services can cache older metadata. Do not use localhost or a GitHub source-code page as the application's canonical URL.
