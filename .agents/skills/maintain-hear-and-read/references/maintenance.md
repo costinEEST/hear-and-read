@@ -1,11 +1,12 @@
 # Maintenance invariants and checks
 
-Read the section relevant to the change. The main skill owns language/voice policy and general validation; the Python reference owns setup commands. Dependencies explain their rationale in `pyproject.toml`.
+Read the section relevant to the change. The main skill owns language/voice policy and general validation; the Worker environment reference owns setup commands. Dependency rationale is documented in the Worker environment reference.
 
 ## Content imports and serving
 
-- Bind the local server to loopback. Keep static GET/HEAD serving on an explicit public-asset allowlist; add browser modules there when introduced. Never expose source files, archives, environment or configuration.
-- `content_import.py` owns source registration and UI descriptions/examples. New adapters validate HTTPS hosts, paths, credentials, ports and every redirect. Keep bounded fetching/timeouts in `source_http.py`; do not make an arbitrary URL proxy.
+- Bind Wrangler development to loopback. Keep `dist/public/` generated from the explicit allowlist in `scripts/build-assets.mjs`, never the repository root. Static assets bypass Worker execution and receive security headers from generated `_headers`; API responses set their own headers. Never expose source files, archives, environment or configuration.
+- `worker/sources.ts` owns source registration and UI descriptions/examples. New adapters validate HTTPS hosts, paths, credentials, ports and every redirect. Keep bounded fetching/timeouts in `worker/http.ts`; do not make an arbitrary URL proxy.
+- Use native HTMLRewriter for extraction. It streams raw text in chunks: concatenate before entity decoding and preserve inline punctuation. Decode attribute values in attribute context before reading media-link query parameters, so escaped ampersands do not discard track/language parameters. Remove noise in a separate pass because removed descendants can still trigger callbacks. Test optional end tags, nested matching elements and multiple parser-output roots in workerd.
 - Return plain text and the shared document shape: `title`, `text`, `language`, `audioUrl`, `duration`, `segments`, `timingSource`, `sourceUrl`, `source`, optional `pronunciationUrl`/`notice`. Extend source-link validation in `timing.js` and extraction/URL-policy tests when adding sources.
 - Insert fetched content with textContent. Keep credits, license/history links and edited-source labels across session export/load. Truncate long articles at paragraph boundaries with a notice.
 - Keep pronunciation clips separate from full-text audio and definition timings. Surface HTTP 403/429 with manual-paste/retry guidance; do not bypass declined access.
@@ -32,7 +33,7 @@ Read the section relevant to the change. The main skill owns language/voice poli
 
 ## Targeted browser smoke checks
 
-For affected behavior, use the actual Python server and Chrome DevTools MCP when available. Stop any server you started; leave existing user servers alone.
+For affected behavior, use the actual local Worker and Chrome DevTools MCP when available. Stop any server you started; leave existing user servers alone.
 
 - Speech: verify real startup and advancing playback, pause/resume acknowledgements, startup cancellation, previews, word/selection completion, rapid voice changes, missing-word fallback and late callback isolation. Inject engines for deterministic failure paths and restore overrides afterward; they do not prove audible quality.
 - Recordings/timing: verify advancing currentTime, speed after metadata loading, repeat/shadowing cancellation, repeated-word timings and out-of-order pin rejection. Check that new audio metadata preserves imported alignment.
@@ -40,8 +41,8 @@ For affected behavior, use the actual Python server and Chrome DevTools MCP when
 - Persistence: check save/load/export, legacy defaults, blocked/malformed/full storage and portable local-audio re-selection. Restore temporary test records.
 - UI: check native keyboard interaction, dialog focus, 320px/200% text reflow, short landscape, dark/reduced-motion and forced colors where relevant. Inspect console/network. An audit score or HTTP 200 does not establish playback or every interaction.
 
-## TODO: extension speech adapter
+## Future extension work (only when requested)
 
-- [ ] When implementing the extension, adapt chrome.tts lifecycle/boundary events to the controller interface. Use voice metadata and requiredEventTypes to select engines supporting word events; preserve cancellation and stale-callback isolation.
+When implementing an extension, adapt chrome.tts lifecycle/boundary events to the controller interface. Use voice metadata and requiredEventTypes to select engines supporting word events; preserve cancellation and stale-callback isolation.
 
 chrome.tts requires an extension context and is unavailable to the ordinary page. Word-event support does not guarantee better audio quality. See the [Chrome TTS documentation](https://developer.chrome.com/docs/extensions/reference/api/tts).

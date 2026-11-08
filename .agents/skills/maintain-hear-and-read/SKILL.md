@@ -1,52 +1,44 @@
 ---
 name: maintain-hear-and-read
-description: Maintain this repository's Hungarian, Spanish and German listening studio, including its vanilla browser interface, Python content-source adapters, uv environment and regression checks. Use for implementation or development setup in this project, not unrelated Python or website projects.
+description: Maintain this repository's Hungarian, Spanish and German listening studio, including its vanilla browser interface, TypeScript Cloudflare Worker source adapters, Wrangler environment and regression checks. Use for implementation or development setup in this project, not unrelated repositories.
 ---
 
 # Maintain Hear & Read
 
-Keep the root-level browser files as plain HTML, CSS and browser-native JavaScript. Packages belong on the Python backend; do not introduce a frontend framework, npm dependency or build step unless requested. `package.json` currently supplies only the Node test command.
+Keep the root-level browser files as plain HTML, CSS and browser-native JavaScript. Keep dependencies on the Worker/tooling side; do not introduce a frontend framework or browser bundler unless requested. The asset build copies only the explicit public-file allowlist into `dist/public/`. HTML extraction uses native HTMLRewriter; `entities` only decodes collected text.
 
 ## Read what the task needs
 
-- For setup, running the app, Python/tool changes, dependencies and backend validation, read [Python environment and commands](references/python-environment.md). Keep the two-command user quick start in the README; the reference links to it and owns detailed environment/development procedures.
-- For importer, speech, persistence or styling changes, read the relevant section of [maintenance invariants and checks](references/maintenance.md). Dependency rationale stays beside declarations in `pyproject.toml`.
+- For setup, running the app, Worker/tool changes, dependencies and backend validation, read [Worker environment and commands](references/worker-environment.md). Keep the two-command user quick start in the README; the reference links to it and owns detailed environment/development procedures.
+- For importer, speech, persistence or styling changes, read the relevant section of [maintenance invariants and checks](references/maintenance.md). Dependency rationale stays in the Worker environment reference.
+- For branding, SEO or publication metadata, read [BRANDING.md](../../../BRANDING.md). It owns the production URL and the metadata/domain-change checklist.
 - Keep [README.md](../../../README.md) focused on using the studio and finding test commands. Put durable regression coverage in tests, maintenance constraints in this skill/reference, and actual check results in commit messages or task handoffs; do not maintain a separate dated verification log.
 
 ## Modern Web Guidance: when
 
 Consult the available `modern-web-guidance` skill **before changing HTML structure, CSS layout/styles/motion, or client-side JavaScript behavior**, including browser APIs, accessibility, performance and frontend security. For mixed tasks, apply it only to the affected frontend portion.
 
-Skip its skill and CLI for documentation/skill edits, Python-only work, tests, dependency/tooling configuration, Git, infrastructure and data-only changes that do not change browser behavior. Opening a browser to check an unchanged page does not itself trigger a lookup. Changing `jw_import.py` extraction alone does not trigger guidance; changing how `app.js` renders its response does.
+Skip its skill and CLI for documentation/skill edits, backend-only work, tests, dependency/tooling configuration, Git, infrastructure and data-only changes that do not change browser behavior. Opening a browser to check an unchanged page does not itself trigger a lookup. Changing `worker/jw.ts` extraction alone does not trigger guidance; changing how `app.js` renders its response does.
 
 ## Modern Web Guidance: how
 
-1. Read the installed `modern-web-guidance/SKILL.md` and follow its current workflow, including any skill-version flag. Prefer the local skill/executable; otherwise use `npx -y modern-web-guidance@latest`. Follow the installed skill's pnpx preference when available, plus its network permission and cache instructions.
-2. Search **one concrete web capability**, with a focused 2–5 word query such as `"validate form inputs"` or `"light dismiss dialog"`. Avoid project/domain queries or compound lists of features. Example:
-
-   ```sh
-   npx -y modern-web-guidance@latest search "validate form inputs"
-   ```
-
-3. Judge matches by descriptions. Retrieve directly relevant IDs returned by search using the CLI's `retrieve` command. Do not invent IDs or retrieve unrelated guides to satisfy a checklist. If results are empty/unrelated, run `list` once to check broader terminology; proceed without forcing a guide when the capability is not covered.
-4. Read retrieved guides fully, including files the CLI saves instead of printing. Apply relevant requirements and browser-support fallbacks before implementing the affected code.
-5. Check the result against the guidance and follow the installed skill's handoff disclosure requirements, using actual guide IDs and quotes from the current lookup.
-
-Reference: [official Modern Web Guidance skill](https://github.com/GoogleChrome/modern-web-guidance/blob/main/skills/modern-web-guidance/SKILL.md). Do not run its CLI merely to edit this skill.
+Read the installed `modern-web-guidance/SKILL.md` and follow its current search/retrieve workflow, version flag, permissions, saved-output reading and handoff requirements. Search a focused web capability; use returned guide IDs and proceed without forcing unrelated guidance when the catalog does not cover it. Do not duplicate or pin that skill's evolving CLI instructions here.
 
 ## Change the active application
 
-- `index.html`: native controls, structure and dialogs.
+- `index.html`: native controls, structure, dialogs and publication metadata.
+- `robots.txt` and `sitemap.xml`: public crawler guidance and canonical home-page entry; keep them in the asset allowlist and Wrangler build watch list.
 - `styles.css`: presentation and responsive styles.
 - `app.js`: playback UI, sentence sequencing, voice discovery, sync editing and persistence.
 - `speech-playback.js`: DOM-independent utterance lifecycle, previews/narration, pause/resume and cancellation. Keep callback invalidation inside the controller; app tokens also invalidate shadowing timers.
 - `timing.js`: locale-aware parsing, timing and session validation; `speech.js`: language definitions, demos and pure voice ranking.
-- `server.py`: local serving/import endpoint; `content_import.py`: source registry; `jw_import.py` and `wiki_import.py`: source extraction; `source_http.py`: bounded fetching.
+- `worker/index.ts`: API routing/security; `worker/sources.ts`: source registry; `worker/jw.ts` and `worker/wiki.ts`: source extraction; `worker/http.ts`: bounded fetching; `worker/html.ts`: native HTMLRewriter record collection.
+- `wrangler.jsonc`: Worker/Static Assets deployment; `scripts/build-assets.mjs`: public-asset allowlist and static headers.
 - `tests/`: active regression checks and fixtures.
 
 Keep assets in `assets/`, regression tests and fixtures in `tests/`, and project skills in `.agents/skills/`. Build future extension work separately when requested.
 
-Keep content-source selection independent of browser speech/full-text audio. Register new sources in `content_import.py`; preserve source credits and separate word-pronunciation clips from full-text narration. Report declined automated access without bypassing it. Preserve publisher segment boundaries while labeling interpolated words/sentences as estimates. Preserve complete timing validation, position-based repeated-word matching, imported timings during metadata loading, saved speed, cancellation of obsolete imports/voice/shadowing work, and local-only audio-file handling.
+Keep content-source selection independent of browser speech/full-text audio. Register new sources in `worker/sources.ts`; preserve source credits and separate word-pronunciation clips from full-text narration. Report declined automated access without bypassing it. Preserve publisher segment boundaries while labeling interpolated words/sentences as estimates. Preserve complete timing validation, position-based repeated-word matching, imported timings during metadata loading, saved speed, cancellation of obsolete imports/voice/shadowing work, and local-only audio-file handling.
 
 ## Language and voice goals
 
@@ -60,9 +52,9 @@ Keep content-source selection independent of browser speech/full-text audio. Reg
 
 ## Validate the affected behavior
 
-- For JavaScript timing/parsing/session changes, run `npm test`; use `node --check app.js` when changing the browser module. Node 22+ is for checks, not serving the app.
-- For Python/dependency changes, use the scoped checks in the Python reference.
-- For frontend behavior/layout changes, start the local server using that reference and use Chrome DevTools MCP when available. Test changed controls and relevant failure paths, inspect console/network, and confirm advancing audio before claiming playback works. An HTTP 200 alone is insufficient.
+- For JavaScript timing/parsing/session changes, run `npm run test:browser-logic`; use `node --check app.js` when changing the browser module. Node 22.12+ runs tooling; Wrangler runs the local Worker.
+- For Worker/dependency changes, use the scoped checks in the Worker environment reference.
+- For frontend behavior/layout changes, start Wrangler locally using that reference and use Chrome DevTools MCP when available. Test changed controls and relevant failure paths, inspect console/network, and confirm advancing audio before claiming playback works. An HTTP 200 alone is insufficient.
 - For layout changes, check 320px touch reflow, short landscape and equivalent 200% text sizing. Check keyboard operation, focus restoration, reduced motion and high contrast when relevant. Lighthouse supports these observations; it does not prove every interaction.
 - For documentation-only changes, check links and command accuracy. Validate skills with the skill-creator validator; do not run application tests or the browser matrix without a separate reason.
 
