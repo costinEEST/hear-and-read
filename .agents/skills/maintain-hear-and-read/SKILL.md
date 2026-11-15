@@ -1,13 +1,21 @@
 ---
 name: maintain-hear-and-read
-description: Maintain this repository's Hungarian, Spanish and German listening studio, including its vanilla browser interface, TypeScript Cloudflare Worker source adapters, Wrangler environment and regression checks. Use for implementation or development setup in this project, not unrelated repositories.
+description: Use for Hear & Read implementation and dev setup, including browser speech and Worker imports. Do not use for unrelated repositories.
 ---
 
 # Maintain Hear & Read
 
+## Purpose
+
+Maintain this repository's Hungarian, Spanish and German listening studio. Resolve file paths and run project commands from the repository root; links below are relative to this skill's directory.
+
 Keep the root-level browser files as plain HTML, CSS and browser-native JavaScript. Keep dependencies on the Worker/tooling side; do not introduce a frontend framework or browser bundler unless requested. The asset build copies only the explicit public-file allowlist into `dist/public/`. HTML extraction uses native HTMLRewriter; `entities` only decodes collected text.
 
-## Read what the task needs
+## Prerequisites
+
+For application commands, use the Node version in `.nvmrc`; install dependencies with `npm ci` when setting up or restoring the committed lockfile. See the environment reference for setup. Documentation-only work does not require dependency installation. Browser verification needs a running local Wrangler instance and an available browser tool. Read the installed `modern-web-guidance` skill for frontend changes as described below; if unavailable, report that gap and consult current official platform documentation for the affected APIs.
+
+## Instructions
 
 - For setup, running the app, Worker/tool changes, dependencies and backend validation, read [Worker environment and commands](references/worker-environment.md). Keep the two-command user quick start in the README; the reference links to it and owns detailed environment/development procedures.
 - For importer, speech, persistence or styling changes, read the relevant section of [maintenance invariants and checks](references/maintenance.md). Dependency rationale stays in the Worker environment reference.
@@ -56,6 +64,29 @@ Keep content-source selection independent of browser speech/full-text audio. Reg
 - For Worker/dependency changes, use the scoped checks in the Worker environment reference.
 - For frontend behavior/layout changes, start Wrangler locally using that reference and use Chrome DevTools MCP when available. Test changed controls and relevant failure paths, inspect console/network, and confirm advancing audio before claiming playback works. An HTTP 200 alone is insufficient.
 - For layout changes, check 320px touch reflow, short landscape and equivalent 200% text sizing. Check keyboard operation, focus restoration, reduced motion and high contrast when relevant. Lighthouse supports these observations; it does not prove every interaction.
-- For documentation-only changes, check links and command accuracy. Validate skills with the skill-creator validator; do not run application tests or the browser matrix without a separate reason.
+- For documentation-only changes, check links and command accuracy. For skill edits, use the skill-creator validator when available; otherwise check YAML frontmatter, name/directory consistency and local reference targets, and report the validator gap. Do not run application tests or the browser matrix without a separate reason.
 
 Report actual checks and limits in the task handoff or commit message. Distinguish injected-engine tests from native browser playback and fixtures from live imports. Moving documentation is not new behavioral verification.
+
+## Examples
+
+- “Fix German voice selection after loading a session”: read the persistence and speech sections of the maintenance reference, apply Modern Web Guidance, update the affected browser module and synthetic-catalog coverage, then verify the changed flow with exposed browser voices.
+- “Add a website importer”: read both references, register the adapter in `worker/sources.ts`, preserve bounded fetching and the shared response shape, and run the backend checks. Apply Modern Web Guidance if browser rendering also changes.
+- “Correct the setup documentation”: check commands against `package.json`, `.nvmrc` and `wrangler.jsonc`; follow the Worker environment reference without starting the speech/layout test matrix.
+
+For a voice-ranking-only change in `speech.js`, the focused logic check is:
+
+```sh
+npm run test:browser-logic
+```
+
+## Troubleshooting
+
+- Dependency installation reports an engine mismatch: activate the version in `.nvmrc` and retry `npm ci`; keep strict engine checking enabled.
+- Local Wrangler reports that port 8765 is occupied: leave the existing server alone and use `npm run dev -- --port 8766`.
+- The browser exposes no suitable voice: wait for `voiceschanged`, refresh the catalog and use the existing install/refresh guidance. Preserve the chosen language and show the unavailable state.
+- A live import returns 403/429: preserve the current text and offer manual paste/retry. Use fixtures to isolate extraction regressions from publisher access failures.
+
+## Limitations
+
+Browser voice quality and word events depend on the exposed engine. Synthetic catalogs and injected engines cannot establish audible quality; Worker fixtures cannot establish live publisher access. Local audio files require user re-selection after restoring a session. Deployment changes a live Cloudflare Worker; perform it only when the user's request authorizes publication, and otherwise use `npm run deploy:check` for packaging validation.

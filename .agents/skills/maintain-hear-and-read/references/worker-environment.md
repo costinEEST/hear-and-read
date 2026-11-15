@@ -1,6 +1,6 @@
 # Worker environment and commands
 
-Use the Node 26 LTS baseline pinned in `.nvmrc` (currently 26.13.0) and npm from the repository root. With nvm, run `nvm install` and `nvm use` first. Keep the version pin, `package.json` engine constraint and README setup instructions aligned when adopting a new baseline; `.npmrc` enables strict engine checking for dependency installation. Restart running tooling after an upgrade. Follow the two-command [README quick start](../../../../README.md#run-locally). `npm ci` installs the committed lockfile; no Python environment is needed.
+Use the Node LTS baseline pinned in `.nvmrc` and npm from the repository root. With nvm, run `nvm install` and `nvm use` first. Keep the version pin, `package.json` engine constraint and README setup instructions aligned when adopting a new baseline; `.npmrc` enables strict engine checking for dependency installation. Restart running tooling after an upgrade. Follow the two-command [README quick start](../../../../README.md#run-locally). `npm ci` installs the committed lockfile; no Python environment is needed.
 
 ## Runtime and dependencies
 
