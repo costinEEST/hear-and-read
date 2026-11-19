@@ -1,8 +1,9 @@
+import { wikiHosts } from "./languages.js";
 /** Text, alignment and persistence validation shared by the UI and Node tests. */
 import { DEMOS, languageConfig } from "./speech.js";
-export const DEMO = DEMOS.hu;
+export const DEMO = DEMOS.en;
 
-export function parseText(text, language = "hu") {
+export function parseText(text, language = "en") {
   const config = languageConfig(language);
   const sentences = [],
     words = [];
@@ -193,12 +194,7 @@ export function validateSession(data) {
 export function validateSource(source) {
   if (!source) return null;
   const url = new URL(source.url);
-  const hosts = [
-    "www.jw.org",
-    "jw.org",
-    "hu.wikipedia.org",
-    "hu.wiktionary.org",
-  ];
+  const hosts = ["www.jw.org", "jw.org", ...wikiHosts];
   if (
     url.protocol !== "https:" ||
     !hosts.includes(url.hostname) ||

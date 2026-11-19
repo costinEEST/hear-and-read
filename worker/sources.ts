@@ -1,3 +1,4 @@
+import { LANGUAGES, sourceExample, wikiHosts } from "../languages.js";
 import { importJw } from "./jw";
 import { importWiki } from "./wiki";
 import { InputError } from "./types";
@@ -10,35 +11,32 @@ const SOURCES = [
     hosts: ["www.jw.org", "jw.org"],
     description:
       "Text and original recordings, with segment timings when available.",
-    example:
-      "https://www.jw.org/hu/konyvtar/biblia/nwt/konyvek/M%C3%A1t%C3%A9/5/",
     importer: importJw,
   },
   {
     id: "wikipedia",
     name: "Wikipedia",
-    hosts: ["hu.wikipedia.org"],
+    hosts: wikiHosts.filter((host) => host.endsWith(".wikipedia.org")),
     description:
-      "Hungarian article text. Listen with a browser voice or add your own recording.",
-    example: "https://hu.wikipedia.org/wiki/Budapest",
+      "Article text. Listen with a browser voice or add your own recording.",
     importer: importWiki,
   },
   {
     id: "wiktionary",
     name: "Wiktionary",
-    hosts: ["hu.wiktionary.org"],
+    hosts: wikiHosts.filter((host) => host.endsWith(".wiktionary.org")),
     description:
-      "Hungarian definitions, plus word pronunciation when available. Browser voice reads the definitions.",
-    example: "https://hu.wiktionary.org/wiki/alma",
+      "Definitions in the page language, plus word pronunciation when available. Browser voice reads the definitions.",
     importer: importWiki,
   },
 ];
-export function sourceCatalog() {
-  return SOURCES.map(({ id, name, description, example }) => ({
+export function sourceCatalog(language = "en") {
+  const code = Object.hasOwn(LANGUAGES, language) ? language : "en";
+  return SOURCES.map(({ id, name, description }) => ({
     id,
     name,
     description,
-    example,
+    example: sourceExample(id, code),
   }));
 }
 
@@ -66,6 +64,6 @@ export async function importContent(
   result.source ??= { name: adapter.name, url: result.sourceUrl };
   result.source.id = adapter.id;
   result.pronunciationUrl ??= "";
-  result.language = "hu";
+
   return result;
 }

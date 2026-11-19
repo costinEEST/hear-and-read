@@ -30,7 +30,9 @@ export async function handleRequest(
     url.pathname === "/api/sources" &&
     ["GET", "HEAD"].includes(request.method)
   ) {
-    const response = json(200, { sources: sourceCatalog() });
+    const response = json(200, {
+      sources: sourceCatalog(url.searchParams.get("language") || "en"),
+    });
     return request.method === "HEAD" ? new Response(null, response) : response;
   }
   if (url.pathname !== "/api/import") {

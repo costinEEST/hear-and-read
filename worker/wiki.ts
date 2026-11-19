@@ -1,8 +1,9 @@
+import { LANGUAGES, wikiHosts } from "../languages.js";
 import { scanHtml, inside, normalize } from "./html";
 import { fetchPage, publicUrl, type Fetcher } from "./http";
 import { InputError, type Document } from "./types";
 
-const HOSTS = ["hu.wikipedia.org", "hu.wiktionary.org"];
+const HOSTS = wikiHosts;
 const SKIP = new Set([
   "jegyzetek",
   "források",
@@ -13,6 +14,68 @@ const SKIP = new Set([
   "ragozás",
   "kiejtés",
   "lásd még",
+  "references",
+  "external links",
+  "see also",
+  "further reading",
+  "translations",
+  "pronunciation",
+  "declension",
+  "conjugation",
+  "note",
+  "bibliografie",
+  "legături externe",
+  "pronunție",
+  "traduceri",
+  "referințe",
+  "примітки",
+  "джерела",
+  "посилання",
+  "переклади",
+  "вимова",
+  "примечания",
+  "источники",
+  "ссылки",
+  "перевод",
+  "произношение",
+  "бележки",
+  "източници",
+  "външни препратки",
+  "преводи",
+  "произношение",
+  "референце",
+  "спољашње везе",
+  "преводи",
+  "изговор",
+  "referencias",
+  "enlaces externos",
+  "traducciones",
+  "pronunciación",
+  "bibliografia",
+  "collegamenti esterni",
+  "traduzioni",
+  "pronuncia",
+  "przypisy",
+  "linki zewnętrzne",
+  "tłumaczenia",
+  "wymowa",
+  "einzelnachweise",
+  "weblinks",
+  "übersetzungen",
+  "aussprache",
+  "beispiele",
+  "übersetzungen",
+  "sinonime",
+  "antonime",
+  "znaczenia pokrewne",
+  "przykłady",
+  "tłumaczenia",
+  "exemples",
+  "traductions",
+  "notes et références",
+  "liens externes",
+  "traductions",
+  "prononciation",
 ]);
 
 export function validateWiki(raw: string, host: string): string {
@@ -43,6 +106,9 @@ export async function extractWiki(
   url: string,
   dictionary: boolean,
 ): Promise<Document> {
+  const language = new URL(url).hostname.split(".")[0];
+  const config = LANGUAGES[language];
+  if (!config) throw new InputError("Choose a supported practice language.");
   const records = await scanHtml(
     html,
     "script, style, sup.reference, .mw-editsection, table, figure, .thumb, .toc, .navbox, .reflist, .references, .noprint, .hatnote, .ambox, .metadata, .catlinks, .mw-empty-elt",
@@ -51,8 +117,9 @@ export async function extractWiki(
       titles: { selector: "#firstHeading, h1" },
       fields: {
         selector:
-          ".mw-parser-output h2, .mw-parser-output h3, .mw-parser-output h4, .mw-parser-output h5, .mw-parser-output h6, .mw-parser-output p, .mw-parser-output ol > li, .mw-parser-output a, .mw-parser-output source",
-        exclude: "li p, dd p, nav p, aside p, li li, dd li, nav li, aside li",
+          ".mw-parser-output h1, .mw-parser-output h2, .mw-parser-output h3, .mw-parser-output h4, .mw-parser-output h5, .mw-parser-output h6, .mw-parser-output p, .mw-parser-output ol > li, .mw-parser-output dl > dd, .mw-parser-output a, .mw-parser-output source",
+        exclude:
+          "li p, dd p, nav p, aside p, li li, dd li, nav li, aside li, dd dd, li dd, nav dd, aside dd",
       },
     },
   );
@@ -66,17 +133,31 @@ export async function extractWiki(
     decodeURIComponent(new URL(url).pathname.slice(6)).replaceAll("_", " ");
   const texts: string[] = [],
     pronunciations: string[] = [];
+  const matchesLanguage = (heading: string) =>
+    config.section.some((name) => {
+      const label = name.toLocaleLowerCase(language);
+      return (
+        heading === label ||
+        heading.endsWith(`(${label})`) ||
+        heading.startsWith(`${label} (`)
+      );
+    });
   let active = !dictionary,
-    foundHungarian = false,
-    skipLevel = 0;
+    foundLanguage = false,
+    skipLevel = 0,
+    languageLevel = 0;
   for (const tag of records.fields.filter((record) => inside(record, root))) {
     const name = tag.tag;
-    if (/^h[2-6]$/u.test(name)) {
+    if (/^h[1-6]$/u.test(name)) {
       const level = Number(name[1]),
-        heading = normalize(tag.text).toLocaleLowerCase("hu");
-      if (dictionary && level === 2) {
-        active = heading === "magyar";
-        foundHungarian ||= active;
+        heading = normalize(tag.text).toLocaleLowerCase(language);
+      if (
+        dictionary &&
+        (matchesLanguage(heading) || level <= (languageLevel || 2))
+      ) {
+        active = matchesLanguage(heading);
+        if (active) languageLevel = level;
+        foundLanguage ||= active;
         skipLevel = 0;
         continue;
       }
@@ -107,16 +188,17 @@ export async function extractWiki(
       }
     }
     if (skipLevel || tag.excluded) continue;
-    if (name === "p" || (dictionary && name === "li")) texts.push(tag.text);
+    if (name === "p" || (dictionary && ["li", "dd"].includes(name)))
+      texts.push(tag.text);
   }
-  if (dictionary && !foundHungarian)
+  if (dictionary && !foundLanguage)
     throw new InputError(
-      "This entry has no Hungarian (Magyar) section. Choose a Hungarian word or paste text manually.",
+      "This entry has no matching language section. Choose another word or paste text manually.",
     );
   const blocks = texts.filter(Boolean),
     included: string[] = [];
   if (!blocks.length)
-    throw new InputError("No readable Hungarian text found on this page.");
+    throw new InputError("No readable text found on this page.");
   let size = 0;
   for (const text of blocks) {
     if (size + text.length + 2 > 100_000) break;
@@ -135,6 +217,7 @@ export async function extractWiki(
   }).toString();
   return {
     title,
+    language,
     text: included.join("\n\n"),
     audioUrl: "",
     duration: 0,
@@ -151,10 +234,9 @@ export async function extractWiki(
       historyUrl: history.href,
     },
     notice:
-      `${name} text imported. Use a Hungarian browser voice or add a matching recording.` +
-      (included.length < blocks.length
-        ? " The article was shortened to fit the 100,000-character limit."
-        : ""),
+      included.length < blocks.length
+        ? "The article was shortened to fit the 100,000-character limit. Use a matching browser voice or recording."
+        : "Text imported. Use a matching browser voice or add a recording.",
   };
 }
 
@@ -168,5 +250,5 @@ export async function importWiki(
     (value) => validateWiki(value, host),
     fetcher,
   );
-  return extractWiki(html, url, host === "hu.wiktionary.org");
+  return extractWiki(html, url, host.endsWith(".wiktionary.org"));
 }

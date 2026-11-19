@@ -4,9 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Hear &amp; Read — Hungarian, Spanish &amp; German Listening Practice</title>
+  <title>Hear &amp; Read — Multilingual Listening Practice</title>
   <meta name="description"
-    content="Practice Hungarian, Spanish and German for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.">
+    content="Practice 12 languages for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.">
   <meta name="application-name" content="Hear &amp; Read">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="https://hear-and-read.costineest.workers.dev/">
@@ -18,7 +18,7 @@
   <meta property="og:url" content="https://hear-and-read.costineest.workers.dev/">
   <meta property="og:title" content="Hear &amp; Read — Listen. Follow. Repeat.">
   <meta property="og:description"
-    content="Practice Hungarian, Spanish and German for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.">
+    content="Practice 12 languages for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.">
   <meta property="og:locale" content="en_US">
   <meta property="og:image" content="https://hear-and-read.costineest.workers.dev/assets/social-card.png">
   <meta property="og:image:type" content="image/png">
@@ -28,7 +28,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Hear &amp; Read — Listen. Follow. Repeat.">
   <meta name="twitter:description"
-    content="Practice Hungarian, Spanish and German for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.">
+    content="Practice 12 languages for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.">
   <meta name="twitter:image" content="https://hear-and-read.costineest.workers.dev/assets/social-card.png">
   <meta name="twitter:image:alt" content="Hear &amp; Read. Listen. Follow. Repeat. Your audio. Your text. Your pace.">
   <link rel="icon" type="image/svg+xml" sizes="any" href="assets/favicon.svg">
@@ -40,7 +40,7 @@
     "url": "https://hear-and-read.costineest.workers.dev/",
     "name": "Hear & Read",
     "alternateName": "hear-and-read",
-    "description": "Practice Hungarian, Spanish and German for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.",
+    "description": "Practice 12 languages for free with audio, highlighted text, sentence loops and editable word timings. Use recordings or browser voices.",
     "image": "https://hear-and-read.costineest.workers.dev/assets/social-card.png",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Any",
@@ -48,7 +48,7 @@
     "softwareRequirements": "Modern browser; website imports use a Cloudflare Worker.",
     "inLanguage": "en",
     "isAccessibleForFree": true,
-    "featureList": ["Hungarian, Spanish and German listening practice", "Recordings and available browser voices", "Word and sentence highlighting", "Sentence looping", "Adjustable playback speed", "Editable word timings", "Hungarian website imports", "Session import and export"]
+    "featureList": ["Listening practice in 12 languages", "Recordings and available browser voices", "Word and sentence highlighting", "Sentence looping", "Adjustable playback speed", "Editable word timings", "Multilingual website imports", "Session import and export"]
   }
   </script>
   <link rel="stylesheet" href="styles.css">
@@ -63,16 +63,21 @@
       <p class="eyebrow">Listen. Follow. Repeat.</p>
       <h1>Hear <span>&amp;</span> Read</h1>
     </div>
-    <span class="local-badge">Personal practice</span>
+    <label class="page-language" for="page-language"><span>Page language</span>
+      <select id="page-language" name="page-language" aria-describedby="page-language-help">
+        <option value="en">English</option>
+      </select></label>
   </header>
   <main>
     <section class="intro">
       <div>
         <h2>Hear it. Follow it. Make it yours.</h2>
-        <p>Practice Hungarian, Spanish or German at your own pace. Follow the words, repeat a sentence, then try it
+        <p>Practice 12 languages at your own pace. Follow the words, repeat a sentence, then try it
           without the text.</p>
-      </div><button id="demo" class="quiet">Load Hungarian demo</button>
+      </div>
     </section>
+    <p id="page-language-help" class="muted small">Page language changes menus and help. Practice language sets
+      pronunciation.</p>
     <p id="notice" role="status"></p>
     <p id="error" role="alert"></p>
     <div class="workspace">
@@ -80,7 +85,7 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Now reading</p>
-            <h2 id="reading-title" tabindex="-1" lang="hu">Egy reggel Budapesten</h2>
+            <h2 id="reading-title" tabindex="-1" lang="en">A sunny morning</h2>
           </div><span id="timing-badge" class="badge">Browser voice</span>
         </div>
         <p id="timing-note" class="muted"></p>
@@ -110,14 +115,14 @@
               <option value="blur">Blur to listen first</option>
               <option value="hidden">Hide until finished</option>
             </select></label>
-          <button id="translation" aria-pressed="false">Show English</button>
+          <button id="translation" aria-pressed="false">Show translation</button>
         </div>
         <p id="your-turn" class="turn" role="status" hidden>Your turn — repeat what you heard.</p>
         <p id="sync-hint" class="turn" hidden>Sync is on. Click a word when you hear it to pin its start time.</p>
         <div id="listening-test" hidden>
           <p>Listen first. The text will appear when playback finishes.</p><button id="reveal">Reveal text</button>
         </div>
-        <div id="reader" class="reader" lang="hu"></div>
+        <div id="reader" class="reader" lang="en"></div>
         <div class="actions"><button id="speak-word" type="button">Speak this word</button><button id="speak-selection"
             type="button" aria-describedby="selection-help" disabled>Speak selection</button><button
             id="stop-pronunciation" type="button" hidden>Stop pronunciation</button></div>
@@ -151,17 +156,15 @@
           <div class="section-heading">
             <h2>1. Choose your content</h2><span class="step">Discover</span>
           </div>
-          <fieldset class="practice-languages">
-            <legend>Practice language</legend><label for="language-hu"><input id="language-hu" type="radio"
-                name="practice-language" value="hu" checked><span
-                lang="hu">Magyar</span><small>Hungarian</small></label><label for="language-es"><input id="language-es"
-                type="radio" name="practice-language" value="es"><span
-                lang="es">Español</span><small>Spanish</small></label><label for="language-de"><input id="language-de"
-                type="radio" name="practice-language" value="de"><span
-                lang="de">Deutsch</span><small>German</small></label>
-          </fieldset>
-          <p class="muted small" id="language-help">Sets pronunciation and text language, not translation. Paste text in
-            your selected language or load its demo.</p>
+          <div class="practice-language-row">
+            <label for="practice-language">Practice language<select id="practice-language" name="practice-language"
+                aria-describedby="language-help">
+                <option value="en">English</option>
+              </select></label>
+            <button id="demo" class="quiet" type="button">Load English demo</button>
+          </div>
+          <p class="muted small" id="language-help">Sets pronunciation and text processing. Your text stays in its
+            original language.</p>
           <p class="muted small">Import from a supported website, or paste your own text below. Each source offers
             different text and audio.</p>
           <form id="content-form" action="/api/import" method="post">
@@ -178,8 +181,8 @@
             <div class="actions"><button id="content-import" class="secondary" type="submit">Import
                 content</button><button id="source-example" type="button" disabled>Use an example</button></div>
           </form>
-          <p class="muted small">Website imports currently provide Hungarian text and switch practice to Hungarian. For
-            Spanish or German, paste text or load a demo.</p>
+          <p class="muted small">Examples follow your practice language. Imported pages set their own language; your
+            page language stays unchanged.</p>
         </section>
         <section class="card">
           <div class="section-heading">
@@ -191,7 +194,7 @@
                 name="source" type="radio" value="audio">Original recording</label>
           </fieldset>
           <div id="tts-panel">
-            <label id="voice-label" for="voice">Hungarian voice</label><select id="voice" name="voice"
+            <label id="voice-label" for="voice">English voice</label><select id="voice" name="voice"
               aria-describedby="voice-note voice-quality-help">
               <option value="auto">Auto · recommended voice</option>
             </select>
@@ -237,8 +240,8 @@
           <div class="section-heading">
             <h2>3. Make it your text</h2><span class="step">Read</span>
           </div>
-          <label for="title">Practice title</label><input id="title" value="Egy reggel Budapesten" maxlength="200">
-          <label id="text-label" for="text">Hungarian text</label><textarea id="text" lang="hu" rows="6"
+          <label for="title">Practice title</label><input id="title" value="A sunny morning" maxlength="200">
+          <label id="text-label" for="text">English text</label><textarea id="text" lang="en" rows="6"
             maxlength="100000" aria-describedby="language-help"></textarea>
           <button id="apply-text">Apply text</button>
           <p id="word-count" class="muted small"></p>
@@ -272,7 +275,7 @@
           pins</span></div>
       <details>
         <summary>Import or edit word timings</summary>
-        <p id="json-help">One entry per word, in text order: <code>[{"word":"Jó","start":0,"end":0.4}, …]</code>.
+        <p id="json-help">One entry per word, in text order: <code>[{"word":"Good","start":0,"end":0.4}, …]</code>.
           Include every occurrence of repeated words.</p><label for="timings-json">Timings JSON</label><textarea
           id="timings-json" rows="5" aria-describedby="json-help"></textarea><label for="timings-file">Or choose a
           timings file</label><input id="timings-file" type="file" accept=".json,application/json"><button
@@ -289,7 +292,8 @@
           <p><b>Imported timestamps:</b> the player uses the times you provide. Accuracy depends on how those timestamps
             were made; there is no fixed error guarantee. Forced-alignment output must match this exact text and
             recording.</p>
-          <p>English translations are supplied only for the built-in demos. They are not generated for imported text.
+          <p>Translations into your page language are supplied only for the built-in demos. They are not generated for
+            imported text.
           </p>
         </div>
       </details>
@@ -301,7 +305,7 @@
         <h2 id="word-dialog-title">Word options</h2><button value="close" aria-label="Close word options">Close</button>
       </div>
     </form>
-    <p id="selected-word" lang="hu"></p><label for="edit-word">Word number</label><input id="edit-word" type="number"
+    <p id="selected-word" lang="en"></p><label for="edit-word">Word number</label><input id="edit-word" type="number"
       min="1" value="1">
     <div class="edit-times"><label for="word-start">Start (seconds)<input id="word-start" type="number" min="0"
           step=".001"></label><label for="word-end">End (seconds)<input id="word-end" type="number" min="0"

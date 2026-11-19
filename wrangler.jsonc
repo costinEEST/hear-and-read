@@ -8,11 +8,26 @@
     "directory": "./dist/public",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"],
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
   },
   "build": {
     "command": "npm run build",
-    "watch_dir": ["index.html", "styles.css", "app.js", "timing.js", "speech.js", "speech-playback.js", "robots.txt", "sitemap.xml", "assets", "scripts"]
+    "watch_dir": [
+      "index.html",
+      "styles.css",
+      "app.js",
+      "timing.js",
+      "speech.js",
+      "languages.js",
+      "demos.js",
+      "i18n.js",
+      "locales",
+      "speech-playback.js",
+      "robots.txt",
+      "sitemap.xml",
+      "assets",
+      "scripts",
+    ],
   },
-  "dev": { "ip": "127.0.0.1", "port": 8765 }
+  "dev": { "ip": "127.0.0.1", "port": 8765 },
 }

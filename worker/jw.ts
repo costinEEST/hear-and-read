@@ -1,9 +1,11 @@
+import { LANGUAGES, jwLanguage } from "../languages.js";
 import { scanHtml, inside, type HtmlRecord } from "./html";
 import { fetchPage, publicUrl, type Fetcher } from "./http";
 import { InputError, type Document, type Segment } from "./types";
 
 export function validateJw(raw: string, metadata = false): string {
-  const message = "Use a public https://www.jw.org/hu/ page URL.";
+  const message =
+    "Use a public HTTPS JW.org page in a supported practice language.";
   const url = publicUrl(
     raw,
     metadata ? ["b.jw-cdn.org"] : ["www.jw.org", "jw.org"],
@@ -12,7 +14,7 @@ export function validateJw(raw: string, metadata = false): string {
   if (
     metadata
       ? url.pathname !== "/apis/pub-media/GETPUBMEDIALINKS"
-      : !url.pathname.startsWith("/hu/")
+      : !Object.hasOwn(LANGUAGES, jwLanguage(url.href))
   )
     throw new InputError(message);
   return url.href;
@@ -49,7 +51,8 @@ export function mediaRequest(links: HtmlRecord[], pageUrl: string): string {
   params.set("output", "json");
   params.set("fileformat", "MP3");
   params.set("alllangs", "0");
-  if (!params.has("langwritten")) params.set("langwritten", "H");
+  if (!params.has("langwritten"))
+    params.set("langwritten", LANGUAGES[jwLanguage(pageUrl)]?.jw || "E");
   return `https://b.jw-cdn.org/apis/pub-media/GETPUBMEDIALINKS?${params}`;
 }
 
@@ -232,5 +235,9 @@ export async function importJw(
       "The publisher returned invalid media metadata. Try again later.",
     );
   }
-  return { ...extractJw(records, metadata, request), sourceUrl: url };
+  return {
+    ...extractJw(records, metadata, request),
+    sourceUrl: url,
+    language: jwLanguage(url),
+  };
 }

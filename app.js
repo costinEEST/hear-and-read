@@ -1,4 +1,16 @@
 import {
+  initI18n,
+  t,
+  uiText,
+  uiAttribute,
+  countLabel,
+  refreshTranslations,
+  languageName,
+  currentLocale,
+} from "./i18n.js";
+import { sourceExample } from "./languages.js";
+import { DEMO_LINES } from "./demos.js";
+import {
   DEMO,
   parseText,
   estimate,
@@ -22,9 +34,11 @@ const pronunciation = $("pronunciation");
 const STORE = "hear-and-read.sessions.v1";
 const VOICE_STORE = "hear-and-read.voice-preferences.v1";
 const state = {
-  language: "hu",
+  language: "en",
   selectionText: "",
-  voiceChoices: { hu: "auto", es: "auto", de: "auto" },
+  voiceChoices: Object.fromEntries(
+    Object.keys(LANGUAGES).map((code) => [code, "auto"]),
+  ),
   voiceEntries: [],
   text: DEMO.text,
   title: DEMO.title,
@@ -63,10 +77,10 @@ const state = {
 };
 state.timings = estimate(state.parsed.words, state.parsed.words.length * 0.48);
 const notice = (message) => {
-  $("notice").textContent = message;
+  uiText($("notice"), () => message);
 };
 const error = (message) => {
-  $("error").textContent = message;
+  uiText($("error"), () => message);
 };
 const guard = (fn) => async (event) => {
   try {
@@ -96,17 +110,18 @@ function renderSpeechState({ status, kind }) {
     error: "Play",
   };
   if (kind === "preview") {
-    $("preview-voice").textContent =
+    uiText($("preview-voice"), () =>
       status === "starting"
         ? "Cancel sample"
         : ["idle", "error"].includes(status)
           ? "Test voice"
-          : "Stop sample";
+          : "Stop sample",
+    );
     return;
   }
   if (state.mode !== "tts") return;
   state.playing = status === "speaking" || status === "pausing";
-  $("play").textContent = labels[status];
+  uiText($("play"), () => labels[status]);
 }
 function showWordStatus(status) {
   const changed = state.wordStatus !== status;
@@ -121,7 +136,7 @@ function showWordStatus(status) {
   };
   const message = messages[status];
   if ($("word-status").textContent !== message)
-    $("word-status").textContent = message;
+    uiText($("word-status"), () => message);
   if (changed && state.activeSentence >= 0)
     setActive(state.activeWord, state.activeSentence, false);
 }
@@ -129,7 +144,7 @@ function stopSpeech() {
   state.speechToken++;
   speech.stop();
   showWordStatus("idle");
-  $("preview-voice").textContent = "Test voice";
+  uiText($("preview-voice"), () => "Test voice");
 }
 function stop() {
   pronunciation.pause();
@@ -138,20 +153,25 @@ function stop() {
   audio.pause();
   cancelAnimationFrame(state.raf);
   state.playing = false;
-  $("play").textContent = "Play";
+  uiText($("play"), () => "Play");
 }
 function renderCredit() {
   const source = state.source;
   $("content-credit").hidden = !source;
   if (!source) return;
-  $("credit-name").textContent =
-    `${source.edited ? "Edited text from" : "Content from"} ${source.name}`;
+  uiText(
+    $("credit-name"),
+    () =>
+      `${t(source.edited ? "Edited text from" : "Content from")} ${source.name}`,
+  );
   $("credit-link").href = source.url;
   $("credit-license-wrap").hidden = !source.licenseUrl;
   if (source.licenseUrl) {
     $("credit-license").href = source.licenseUrl;
-    $("credit-license").textContent =
-      `${source.licenseName} (opens in new tab)`;
+    uiText(
+      $("credit-license"),
+      () => `${source.licenseName} (opens in new tab)`,
+    );
     $("credit-history").href = source.historyUrl;
   }
   const hasPronunciation = Boolean(state.pronunciationUrl);
@@ -178,12 +198,17 @@ function updateSourceHelp() {
   const selected = state.sources.find(
     (source) => source.id === sourceSelection(),
   );
-  $("source-help").textContent = selected
-    ? selected.description
-    : "Supported now: " +
-      state.sources.map((source) => source.name).join(", ") +
-      ". Paste a page URL to detect its source.";
-  $("content-url").placeholder = selected?.example || "https://…";
+  uiText($("source-help"), () =>
+    selected
+      ? selected.description
+      : "Paste a supported website URL. Examples follow the practice language.",
+  );
+  const example = sourceExample(selected?.id || "wikipedia", state.language);
+  $("content-url").placeholder = example;
+  if (state.exampleUrl && $("content-url").value === state.exampleUrl) {
+    $("content-url").value = example;
+    state.exampleUrl = example;
+  }
   $("source-example").disabled = !state.sources.length;
 }
 async function loadSources() {
@@ -203,15 +228,18 @@ async function loadSources() {
       input.id = `content-${source.id}`;
       label.htmlFor = input.id;
       span.textContent = source.name;
-      help.textContent = source.description;
+      uiText(help, () => source.description);
       span.append(help);
       label.append(input, span);
       $("content-sources").append(label);
     }
     updateSourceHelp();
   } catch {
-    $("source-help").textContent =
-      "Website imports are unavailable. You can still paste text and choose a voice or audio file.";
+    uiText(
+      $("source-help"),
+      () =>
+        "Website imports are unavailable. You can still paste text and choose a voice or audio file.",
+    );
     $("content-import").disabled = true;
   }
 }
@@ -249,10 +277,9 @@ function updateTimingLabel() {
           "Word highlighting follows voice boundary events when available. The timeline is an estimate; seeking starts a sentence.",
         ]
       : labels[state.timingSource];
-  $("timing-badge").textContent = badge;
-  $("timing-note").textContent = note;
-  $("pin-count").textContent =
-    `${state.anchors.size} ${state.anchors.size === 1 ? "pin" : "pins"}`;
+  uiText($("timing-badge"), () => badge);
+  uiText($("timing-note"), () => note);
+  uiText($("pin-count"), () => countLabel(state.anchors.size, "pins"));
   $("sync").disabled = state.mode !== "audio";
   $("distribute").disabled = state.mode !== "audio";
 }
@@ -263,8 +290,8 @@ function refreshTimeline(time = 0) {
       : state.timings.at(-1)?.end || 0;
   $("seek").max = String(total || 1);
   $("seek").value = String(Math.min(time, total));
-  $("elapsed").textContent = formatTime(time);
-  $("duration").textContent = formatTime(total);
+  uiText($("elapsed"), () => formatTime(time));
+  uiText($("duration"), () => formatTime(total));
   $("seek").disabled = !state.parsed.words.length;
 }
 function updateReaderOptions() {
@@ -357,24 +384,32 @@ function renderReader() {
     if (state.text === demo.text) {
       const translation = document.createElement("span");
       translation.className = "translation";
-      translation.lang = "en";
-      translation.textContent = demo.translations[index] || "";
+      translation.lang = currentLocale();
+      translation.dataset.demoSentence = String(index);
+      translation.textContent = DEMO_LINES[currentLocale()][index] || "";
       translation.hidden = true;
       paragraph.append(translation);
     }
   });
   $("reader").replaceChildren(fragment);
   if (!state.parsed.words.length)
-    $("reader").textContent =
-      `Add ${languageConfig(state.language).name} text to start practicing.`;
-  $("translation").disabled = state.text !== demo.text;
-  if (state.text !== demo.text)
+    uiText(
+      $("reader"),
+      () =>
+        `Add ${languageConfig(state.language).name} text to start practicing.`,
+    );
+  $("translation").disabled =
+    state.text !== demo.text || currentLocale() === state.language;
+  if ($("translation").disabled)
     $("translation").setAttribute("aria-pressed", "false");
   $("reading-title").textContent = state.title;
   $("title").value = state.title;
   $("text").value = state.text;
-  $("word-count").textContent =
-    `${state.parsed.words.length} words · ${state.parsed.sentences.length} sentences`;
+  uiText(
+    $("word-count"),
+    () =>
+      `${countLabel(state.parsed.words.length, "words")} · ${countLabel(state.parsed.sentences.length, "sentences")}`,
+  );
   $("edit-word").max = String(state.parsed.words.length);
   $("play").disabled = !state.parsed.words.length;
   $("word-options").disabled = !state.parsed.words.length;
@@ -418,7 +453,7 @@ function setAudio(url, name) {
   audio.playbackRate = state.speed;
   audio.preservesPitch = true;
   state.audioName = name;
-  $("audio-name").textContent = name;
+  uiText($("audio-name"), () => name);
   // Load metadata only after the user explicitly selects a recording.
   audio.preload = "metadata";
   audio.load();
@@ -452,14 +487,16 @@ function applySoundSettings() {
     pitch = Number($("pitch").value);
   audio.volume = volume;
   pronunciation.volume = volume;
-  const volumeLabel = volume === 0 ? "Muted" : `${Math.round(volume * 100)}%`;
+  const volumeLabel =
+    volume === 0 ? t("Muted") : `${Math.round(volume * 100)}%`;
   $("volume-value").value = volumeLabel;
   $("volume").setAttribute("aria-valuetext", volumeLabel);
-  $("pitch-value").value =
-    `${pitch.toFixed(2)}${pitch === 1 ? " (default)" : ""}`;
+  $("pitch-value").value = t(
+    `${pitch.toFixed(2)}${pitch === 1 ? " (default)" : ""}`,
+  );
   $("pitch").setAttribute(
     "aria-valuetext",
-    `${pitch.toFixed(2)}${pitch === 1 ? ", default" : ""}`,
+    t(`${pitch.toFixed(2)}${pitch === 1 ? ", default" : ""}`),
   );
 }
 function speechSoundOptions() {
@@ -488,8 +525,11 @@ function loadSession(value) {
   if (data.audioUrl)
     setAudio(data.audioUrl, data.audioName || "Saved recording");
   else if (data.mode === "audio") {
-    $("audio-name").textContent =
-      "Select the original audio file again; its saved word timings are preserved.";
+    uiText(
+      $("audio-name"),
+      () =>
+        "Select the original audio file again; its saved word timings are preserved.",
+    );
   }
   updateTimingLabel();
   refreshTimeline();
@@ -527,7 +567,7 @@ async function playAudio() {
     error("");
   } catch {
     state.playing = false;
-    $("play").textContent = "Play";
+    uiText($("play"), () => "Play");
     throw new Error(
       "The recording could not play. Check its URL or choose a local audio file.",
     );
@@ -575,7 +615,7 @@ function speakSentence(index, fromWord = null) {
   const onerror = (event) => {
     if (token !== state.speechToken) return;
     state.playing = false;
-    $("play").textContent = "Play";
+    uiText($("play"), () => "Play");
     if (!["interrupted", "canceled"].includes(event.error))
       error(
         "The selected voice could not speak. Test another available voice or use a recording.",
@@ -586,7 +626,7 @@ function speakSentence(index, fromWord = null) {
     const next = state.repeat ? state.loopSentence : index + 1;
     if (next >= state.parsed.sentences.length) {
       state.playing = false;
-      $("play").textContent = "Play";
+      uiText($("play"), () => "Play");
       state.revealed = true;
       setActive(-1, -1, false);
       updateReaderOptions();
@@ -595,7 +635,7 @@ function speakSentence(index, fromWord = null) {
     }
     if ($("shadow").checked) {
       state.playing = false;
-      $("play").textContent = "Play";
+      uiText($("play"), () => "Play");
       $("your-turn").hidden = false;
       state.timer = setTimeout(
         guard(() => {
@@ -610,7 +650,7 @@ function speakSentence(index, fromWord = null) {
       ...speechSoundOptions(),
       text: state.text.slice(charStart, end),
       voice,
-      lang: languageConfig(state.language).locale,
+      lang: voice.lang || languageConfig(state.language).locale,
       rate: Number($("speed").value),
       onboundary,
       onerror,
@@ -619,7 +659,7 @@ function speakSentence(index, fromWord = null) {
     });
   } catch (failure) {
     state.playing = false;
-    $("play").textContent = "Play";
+    uiText($("play"), () => "Play");
     throw failure;
   }
   error("");
@@ -684,7 +724,7 @@ function tick(fromSeek = false) {
     if ($("shadow").checked && current >= 0) {
       audio.pause();
       $("your-turn").hidden = false;
-      $("play").textContent = "Cancel pause";
+      uiText($("play"), () => "Cancel pause");
       state.timer = setTimeout(
         guard(async () => {
           cancelGap();
@@ -718,12 +758,11 @@ function setPracticeLanguage(code) {
   stop();
   state.documentEpoch++;
   state.language = code;
-  document.querySelector(`#language-${code}`).checked = true;
+  $("practice-language").value = code;
+  updateSourceHelp();
   for (const id of ["reader", "reading-title", "text", "selected-word"])
     $(id).lang = code;
-  $("voice-label").textContent = `${config.name} voice`;
-  $("text-label").textContent = `${config.name} text`;
-  $("demo").textContent = `Load ${config.name} demo`;
+  updateLanguageLabels();
   loadVoices();
 }
 function readVoicePreferences() {
@@ -753,8 +792,11 @@ function updateVoiceNote() {
   const voice = currentVoice();
   const entry = state.voiceEntries.find((item) => item.voice === voice);
   if (!voice) {
-    $("voice-note").textContent =
-      `No suitable ${config.name} voice is available here. Install a matching system voice, then Refresh voices, or use a recording. Other languages will not be substituted.`;
+    uiText(
+      $("voice-note"),
+      () =>
+        `No suitable ${config.name} voice is available here. Install a matching system voice, then Refresh voices, or use a recording. Other languages will not be substituted.`,
+    );
     return;
   }
   const connection = voice.localService
@@ -764,8 +806,11 @@ function updateVoiceNote() {
     entry.tier === 1
       ? "Only a standard voice is available; install an enhanced/premium voice for more natural speech."
       : "Best available quality tier in this browser.";
-  $("voice-note").textContent =
-    `${state.voiceChoices[state.language] === "auto" ? "Auto recommends" : "Selected"}: ${voice.name} · ${voice.lang} · ${entry.quality}. ${availability} ${connection} Word highlighting depends on voice support.`;
+  uiText(
+    $("voice-note"),
+    () =>
+      `${t(state.voiceChoices[state.language] === "auto" ? "Auto recommends" : "Selected")}: ${voice.name} · ${voice.lang} · ${t(entry.quality)}. ${t(availability)} ${t(connection)} Word highlighting depends on voice support.`,
+  );
 }
 function loadVoices() {
   const voices = "speechSynthesis" in window ? speechSynthesis.getVoices() : [];
@@ -779,15 +824,20 @@ function loadVoices() {
     state.voices.some((voice) => voice.voiceURI === choice);
   const auto = document.createElement("option");
   auto.value = "auto";
-  auto.textContent = state.voices.length
-    ? "Auto · best available"
-    : "No matching voice available";
+  uiText(auto, () =>
+    state.voices.length
+      ? "Auto · best available"
+      : "No matching voice available",
+  );
   $("voice").replaceChildren(
     auto,
     ...state.voiceEntries.map((entry) => {
       const option = document.createElement("option");
       option.value = entry.voice.voiceURI;
-      option.textContent = `${entry.voice.name} · ${entry.voice.lang} · ${entry.quality}`;
+      uiText(
+        option,
+        () => `${entry.voice.name} · ${entry.voice.lang} · ${t(entry.quality)}`,
+      );
       return option;
     }),
   );
@@ -797,9 +847,11 @@ function loadVoices() {
   if (state.mode === "tts" && speech.active && speech.paused) stopSpeech();
   if (!available) {
     const best = state.voices[0];
-    $("voice-note").textContent = best
-      ? `Your saved voice is unavailable in the current quality tier. Auto recommends ${best.name} (${best.lang}) for now. Select Auto to keep this choice, or refresh after installing voices.`
-      : `No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice or use a recording.`;
+    uiText($("voice-note"), () =>
+      best
+        ? `Your saved voice is unavailable in the current quality tier. Auto recommends ${best.name} (${best.lang}) for now. Select Auto to keep this choice, or refresh after installing voices.`
+        : `No suitable ${languageConfig(state.language).name} voice is available. Install a matching voice or use a recording.`,
+    );
   } else updateVoiceNote();
 }
 function captureReaderSelection() {
@@ -848,7 +900,7 @@ function speakPronunciation(text) {
     ...speechSoundOptions(),
     text,
     voice,
-    lang: languageConfig(state.language).locale,
+    lang: voice.lang || languageConfig(state.language).locale,
     rate: Number($("speed").value),
     kind: "pronunciation",
     onwordstatus: showWordStatus,
@@ -870,20 +922,20 @@ function previewVoice() {
       "No matching voice is available. Refresh voices or use a recording.",
     );
   stop();
-  $("preview-voice").textContent = "Stop sample";
+  uiText($("preview-voice"), () => "Stop sample");
   try {
     speech.play({
       ...speechSoundOptions(),
       text: languageConfig(state.language).sample,
       voice,
-      lang: languageConfig(state.language).locale,
+      lang: voice.lang || languageConfig(state.language).locale,
       kind: "preview",
       onwordstatus: showWordStatus,
       onend: () => {
-        $("preview-voice").textContent = "Test voice";
+        uiText($("preview-voice"), () => "Test voice");
       },
       onerror: (event) => {
-        $("preview-voice").textContent = "Test voice";
+        uiText($("preview-voice"), () => "Test voice");
         if (!["interrupted", "canceled"].includes(event.error))
           error(
             "The voice sample could not play. Try another voice or a recording.",
@@ -891,7 +943,7 @@ function previewVoice() {
       },
     });
   } catch (failure) {
-    $("preview-voice").textContent = "Test voice";
+    uiText($("preview-voice"), () => "Test voice");
     throw failure;
   }
 }
@@ -946,18 +998,18 @@ function renderSessions() {
     const li = document.createElement("li"),
       title = document.createElement("strong"),
       actions = document.createElement("div");
-    title.textContent = entry.value.title;
+    uiText(title, () => entry.value.title);
     actions.className = "actions";
     const load = document.createElement("button");
-    load.textContent = "Load";
-    load.setAttribute("aria-label", `Load ${entry.value.title}`);
+    uiText(load, () => "Load");
+    uiAttribute(load, "aria-label", () => `Load ${entry.value.title}`);
     load.addEventListener(
       "click",
       guard(() => loadSession(entry.value)),
     );
     const remove = document.createElement("button");
-    remove.textContent = "Delete";
-    remove.setAttribute("aria-label", `Delete ${entry.value.title}`);
+    uiText(remove, () => "Delete");
+    uiAttribute(remove, "aria-label", () => `Delete ${entry.value.title}`);
     remove.addEventListener(
       "click",
       guard(() => {
@@ -972,7 +1024,7 @@ function renderSessions() {
   }
   if (!state.sessions.length) {
     const li = document.createElement("li");
-    li.textContent = "No saved sessions yet.";
+    uiText(li, () => "No saved sessions yet.");
     $("sessions").append(li);
   }
 }
@@ -984,7 +1036,7 @@ function wordDialog(index = state.selectedWord) {
   $("selected-word").textContent = state.parsed.words[index].text;
   $("word-start").value = String(state.timings[index].start);
   $("word-end").value = String(state.timings[index].end);
-  $("word-error").textContent = "";
+  uiText($("word-error"), () => "");
 }
 
 document.addEventListener("selectionchange", captureReaderSelection);
@@ -998,7 +1050,7 @@ on("speak-dialog-word", "click", () => {
     speakPronunciation(state.parsed.words[state.selectedWord]?.text);
     $("word-dialog").close();
   } catch (failure) {
-    $("word-error").textContent = failure.message;
+    uiText($("word-error"), () => failure.message);
   }
 });
 on("play", "click", togglePlay);
@@ -1091,50 +1143,50 @@ on("preview-voice", "click", previewVoice);
 on("refresh-voices", "click", () => {
   loadVoices();
 });
-for (const code of Object.keys(LANGUAGES)) {
-  on(`language-${code}`, "change", () => {
-    const oldDemo = DEMOS[state.language];
-    const draft = $("text").value,
-      draftTitle = $("title").value;
-    const replaceDemo =
-      state.text === oldDemo.text &&
-      draft === state.text &&
-      !state.source &&
-      !audio.hasAttribute("src");
-    setPracticeLanguage(code);
-    if (replaceDemo) {
-      const demo = DEMOS[code];
-      setMode("tts");
-      resetText(demo.text, demo.title);
-      notice(
-        `${languageConfig(code).name} demo loaded. Test the recommended voice, then press Play.`,
+on("practice-language", "change", () => {
+  const code = $("practice-language").value;
+  const oldDemo = DEMOS[state.language];
+  const draft = $("text").value,
+    draftTitle = $("title").value;
+  const replaceDemo =
+    state.text === oldDemo.text &&
+    draft === state.text &&
+    draftTitle === state.title &&
+    !state.source &&
+    !audio.hasAttribute("src");
+  setPracticeLanguage(code);
+  if (replaceDemo) {
+    const demo = DEMOS[code];
+    setMode("tts");
+    resetText(demo.text, demo.title);
+    notice(
+      `${languageConfig(code).name} demo loaded. Test the recommended voice, then press Play.`,
+    );
+  } else {
+    const parsed = parseText(state.text, code);
+    const sameWords =
+      parsed.words.length === state.parsed.words.length &&
+      parsed.words.every(
+        (word, index) => word.text === state.parsed.words[index].text,
       );
-    } else {
-      const parsed = parseText(state.text, code);
-      const sameWords =
-        parsed.words.length === state.parsed.words.length &&
-        parsed.words.every(
-          (word, index) => word.text === state.parsed.words[index].text,
-        );
-      state.parsed = parsed;
-      if (!sameWords) {
-        state.timings = estimate(
-          parsed.words,
-          state.duration || parsed.words.length * 0.48,
-        );
-        state.timingSource = "estimated";
-        state.anchors.clear();
-      }
-      renderReader();
-      $("text").value = draft;
-      $("title").value = draftTitle;
-      refreshTimeline(audio.currentTime);
-      notice(
-        `Practice language changed to ${languageConfig(code).name}. Your text and recording are unchanged; this does not translate text.${!sameWords ? " Word boundaries changed, so timings were reset." : ""}`,
+    state.parsed = parsed;
+    if (!sameWords) {
+      state.timings = estimate(
+        parsed.words,
+        state.duration || parsed.words.length * 0.48,
       );
+      state.timingSource = "estimated";
+      state.anchors.clear();
     }
-  });
-}
+    renderReader();
+    $("text").value = draft;
+    $("title").value = draftTitle;
+    refreshTimeline(audio.currentTime);
+    notice(
+      `Practice language changed to ${languageConfig(code).name}. Your text and recording are unchanged; this does not translate text.${!sameWords ? " Word boundaries changed, so timings were reset." : ""}`,
+    );
+  }
+});
 on("source-tts", "change", () => setMode("tts"));
 on("source-audio", "change", () => setMode("audio"));
 on("apply-text", "click", () => {
@@ -1228,7 +1280,7 @@ on("apply-word", "click", () => {
     notice("Word timing updated.");
     $("word-dialog").close();
   } catch (failure) {
-    $("word-error").textContent = failure.message;
+    uiText($("word-error"), () => failure.message);
   }
 });
 on("copy-word", "click", async () => {
@@ -1239,8 +1291,11 @@ on("copy-word", "click", async () => {
     notice("Word copied.");
     $("word-dialog").close();
   } catch {
-    $("word-error").textContent =
-      "Clipboard access was denied. Select the word above and copy it manually.";
+    uiText(
+      $("word-error"),
+      () =>
+        "Clipboard access was denied. Select the word above and copy it manually.",
+    );
   }
 });
 on("repeat-word-sentence", "click", async () => {
@@ -1340,32 +1395,34 @@ on("audio-form", "submit", (event) => {
 });
 on("content-sources", "change", () => {
   state.documentEpoch++;
-  $("content-error").textContent = "";
+  uiText($("content-error"), () => "");
   updateSourceHelp();
 });
 on("content-url", "input", () => {
   state.documentEpoch++;
   $("content-url").setCustomValidity("");
-  $("content-error").textContent = "";
+  uiText($("content-error"), () => "");
 });
 on("source-example", "click", () => {
   const source =
     state.sources.find((source) => source.id === sourceSelection()) ||
+    state.sources.find((source) => source.id === "wikipedia") ||
     state.sources[0];
   if (source) {
     state.documentEpoch++;
-    $("content-error").textContent = "";
-    $("content-url").value = source.example;
+    uiText($("content-error"), () => "");
+    $("content-url").value = sourceExample(source.id, state.language);
+    state.exampleUrl = $("content-url").value;
     $("content-url").focus();
   }
 });
 on("content-form", "submit", async (event) => {
   event.preventDefault();
   const epoch = ++state.documentEpoch;
-  $("content-error").textContent = "";
+  uiText($("content-error"), () => "");
   $("content-form").setAttribute("aria-busy", "true");
   $("content-import").disabled = true;
-  $("content-import").textContent = "Importing…";
+  uiText($("content-import"), () => "Importing…");
   let importFailure = "";
   try {
     const response = await fetch("/api/import", {
@@ -1391,7 +1448,7 @@ on("content-form", "submit", async (event) => {
       throw new Error(
         "The server returned an invalid import response. Try again or paste the text manually.",
       );
-    const importLanguage = document.language ?? "hu";
+    const importLanguage = document.language ?? "en";
     languageConfig(importLanguage);
     const languageChanged = importLanguage !== state.language;
     const parsed = parseText(document.text, importLanguage);
@@ -1413,17 +1470,16 @@ on("content-form", "submit", async (event) => {
     if (document.audioUrl)
       setAudio(document.audioUrl, `Original ${source.name} recording`);
     else
-      $("audio-name").textContent =
-        "No full-text recording supplied. Use Browser voice or add a matching recording.";
+      uiText(
+        $("audio-name"),
+        () =>
+          "No full-text recording supplied. Use Browser voice or add a matching recording.",
+      );
     state.duration = document.duration;
     updateTimingLabel();
     refreshTimeline();
     notice(
-      (document.notice ||
-        `Imported “${document.title}” from ${source.name}. ${document.segments.length ? `${document.segments.length} publisher segments; words inside each are estimated.` : "Word positions are estimated."}`) +
-        (languageChanged
-          ? ` Practice language switched to ${languageConfig(importLanguage).name}.`
-          : ""),
+      `Content imported. Practice language: ${languageConfig(importLanguage).name}. ${document.notice || "Word positions are estimated."}`,
     );
     error("");
   } catch (failure) {
@@ -1444,11 +1500,11 @@ on("content-form", "submit", async (event) => {
     }
   } finally {
     $("content-import").disabled = false;
-    $("content-import").textContent = "Import content";
+    uiText($("content-import"), () => "Import content");
     $("content-form").removeAttribute("aria-busy");
     if (importFailure && epoch === state.documentEpoch) {
       const message = $("content-error");
-      message.textContent = importFailure;
+      uiText(message, () => importFailure);
       message.focus({ preventScroll: true });
       message.scrollIntoView({ block: "nearest", behavior: "instant" });
     }
@@ -1459,7 +1515,7 @@ pronunciation.addEventListener("play", () => {
   stopSpeech();
   audio.pause();
   state.playing = false;
-  $("play").textContent = "Play";
+  uiText($("play"), () => "Play");
 });
 pronunciation.addEventListener("error", () => {
   if (pronunciation.hasAttribute("src"))
@@ -1486,14 +1542,14 @@ audio.addEventListener("play", () => {
     return;
   }
   state.playing = true;
-  $("play").textContent = "Pause";
+  uiText($("play"), () => "Pause");
   cancelGap();
   cancelAnimationFrame(state.raf);
   animation();
 });
 audio.addEventListener("pause", () => {
   state.playing = false;
-  $("play").textContent = "Play";
+  uiText($("play"), () => "Play");
   cancelAnimationFrame(state.raf);
 });
 audio.addEventListener("seeking", () => {
@@ -1514,7 +1570,7 @@ audio.addEventListener(
     state.revealed = true;
     updateReaderOptions();
     state.playing = false;
-    $("play").textContent = "Play";
+    uiText($("play"), () => "Play");
     setActive(-1, -1, false);
   }),
 );
@@ -1561,7 +1617,9 @@ window.addEventListener("pagehide", () => {
   if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
 });
 try {
+  await initI18n({ onChange: refreshLanguageUI });
   readVoicePreferences();
+  updateLanguageLabels();
   renderReader();
   loadVoices();
   readSessions();
@@ -1570,4 +1628,85 @@ try {
     speechSynthesis.addEventListener("voiceschanged", loadVoices);
 } catch (failure) {
   error(`Studio could not initialize: ${failure.message}`);
+}
+
+function updateLanguageLabels() {
+  uiText($("voice-label"), () =>
+    t("{p0} voice").replace("{p0}", languageName(state.language)),
+  );
+  uiText($("text-label"), () =>
+    t("{p0} text").replace("{p0}", languageName(state.language)),
+  );
+  uiText($("demo"), () =>
+    t("Load {p0} demo").replace("{p0}", languageName(state.language)),
+  );
+}
+function refreshLanguageUI() {
+  const picker = $("practice-language");
+  // Keep native names visible even in an unfamiliar interface language.
+  picker.replaceChildren(
+    ...Object.entries(LANGUAGES).map(([code, config]) => {
+      const option = document.createElement("option"),
+        name = languageName(code);
+      option.value = code;
+      option.lang = code;
+      option.textContent =
+        config.nativeName === name
+          ? config.nativeName
+          : `${config.nativeName} — ${name}`;
+      return option;
+    }),
+  );
+  picker.value = state.language;
+  updateLanguageLabels();
+  for (const span of document.querySelectorAll(
+    ".translation[data-demo-sentence]",
+  )) {
+    span.textContent =
+      DEMO_LINES[currentLocale()][Number(span.dataset.demoSentence)] || "";
+    span.lang = currentLocale();
+  }
+  $("translation").disabled =
+    state.text !== DEMOS[state.language].text ||
+    currentLocale() === state.language;
+  if ($("translation").disabled)
+    $("translation").setAttribute("aria-pressed", "false");
+  document
+    .querySelectorAll(".translation")
+    .forEach(
+      (span) =>
+        (span.hidden =
+          $("translation").getAttribute("aria-pressed") !== "true"),
+    );
+  document.title = `Hear & Read — ${t("Multilingual listening practice")}`;
+  for (const selector of [
+    'meta[name="description"]',
+    'meta[property="og:description"]',
+    'meta[name="twitter:description"]',
+  ]) {
+    document.querySelector(selector).content = t(
+      "Practice 12 languages with recordings, browser voices and highlighted text.",
+    );
+  }
+  document.querySelector('meta[property="og:locale"]').content = LANGUAGES[
+    currentLocale()
+  ].locale.replace("-", "_");
+  const structured = document.querySelector(
+    'script[type="application/ld+json"]',
+  );
+  const data = JSON.parse(structured.textContent);
+  data.inLanguage = currentLocale();
+  data.description = t(
+    "Practice 12 languages with recordings, browser voices and highlighted text.",
+  );
+  structured.textContent = JSON.stringify(data);
+  applySoundSettings();
+  for (const selector of [
+    'meta[property="og:title"]',
+    'meta[name="twitter:title"]',
+  ]) {
+    document.querySelector(selector).content =
+      `Hear & Read — ${t("Listen. Follow. Repeat.")}`;
+  }
+  refreshTranslations();
 }

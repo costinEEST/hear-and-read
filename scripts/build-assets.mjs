@@ -1,3 +1,4 @@
+import { LANGUAGES } from "../languages.js";
 import { mkdir, copyFile, writeFile, rm } from "node:fs/promises";
 
 // Only these files are public. Never use the repository root as assets.directory.
@@ -7,6 +8,10 @@ export const publicFiles = [
   "app.js",
   "timing.js",
   "speech.js",
+  "languages.js",
+  "demos.js",
+  "i18n.js",
+  ...Object.keys(LANGUAGES).map((code) => `locales/${code}.json`),
   "speech-playback.js",
   "robots.txt",
   "sitemap.xml",
