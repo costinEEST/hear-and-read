@@ -878,6 +878,23 @@ select:disabled {
 .playback .primary {
   min-width: 0;
 }
+/* Size for every localized state before playback starts. The hidden copies
+   share one grid cell, so only the tallest label contributes to the height. */
+#play,
+.play-label-sizes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+#play > span,
+.play-label-sizes > span {
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+}
+.play-label-sizes {
+  visibility: hidden;
+  pointer-events: none;
+}
 .reader-actions {
   display: flex;
   flex-wrap: wrap;

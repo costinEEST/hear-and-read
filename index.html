@@ -99,8 +99,13 @@
           <audio id="pronunciation" controls preload="none" aria-label="Word pronunciation" hidden></audio>
         </div>
         <div class="playback"><button id="previous" aria-label="Previous sentence"><span
-              aria-hidden="true">←</span></button><button id="play" class="primary">Play</button><button id="next"
-            aria-label="Next sentence"><span aria-hidden="true">→</span></button></div>
+              aria-hidden="true">←</span></button><button id="play" class="primary">
+            <span id="play-label">Play</span>
+            <span class="play-label-sizes" aria-hidden="true">
+              <span>Play</span><span>Cancel start</span><span>Pause</span><span>Cancel pause</span>
+              <span>Resume</span><span>Cancel resume</span>
+            </span>
+          </button><button id="next" aria-label="Next sentence"><span aria-hidden="true">→</span></button></div>
         <p id="your-turn" class="turn" role="status" hidden>Your turn — repeat what you heard.</p>
         <p id="sync-hint" class="turn" hidden>Sync is on. Click a word when you hear it to pin its start time.</p>
         <div id="listening-test" hidden>

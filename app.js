@@ -57,6 +57,7 @@ const state = {
   playing: false,
   voices: [],
   speechToken: 0,
+  speechContinuation: false,
   wordStatus: "idle",
   timer: null,
   raf: null,
@@ -124,7 +125,13 @@ function renderSpeechState({ status, kind }) {
   }
   if (state.mode !== "tts") return;
   state.playing = status === "speaking" || status === "pausing";
-  uiText($("play"), () => labels[status]);
+  // A sentence ending is not the end of a continuous reading session.
+  // Its onend callback decides whether to continue, wait for shadowing or finish.
+  if (status === "idle" && kind === "narration") return;
+  if (state.speechContinuation && ["idle", "starting"].includes(status)) return;
+  const label = $("play-label");
+  if (label.textContent !== t(labels[status]))
+    uiText(label, () => labels[status]);
 }
 function showWordStatus(status) {
   const changed = state.wordStatus !== status;
@@ -156,7 +163,7 @@ function stop() {
   audio.pause();
   cancelAnimationFrame(state.raf);
   state.playing = false;
-  uiText($("play"), () => "Play");
+  uiText($("play-label"), () => "Play");
 }
 initSettingsDrawer({ beforeOpen: stop });
 function renderCredit() {
@@ -571,7 +578,7 @@ async function playAudio() {
     error("");
   } catch {
     state.playing = false;
-    uiText($("play"), () => "Play");
+    uiText($("play-label"), () => "Play");
     throw new Error(
       "The recording could not play. Check its URL or choose a local audio file.",
     );
@@ -583,7 +590,7 @@ function currentVoice() {
     ? state.voices[0]
     : state.voices.find((voice) => voice.voiceURI === choice);
 }
-function speakSentence(index, fromWord = null) {
+function speakSentence(index, fromWord = null, continuing = false) {
   pronunciation.pause();
   if (!speech.available)
     throw new Error(
@@ -596,77 +603,84 @@ function speakSentence(index, fromWord = null) {
     );
   const sentence = state.parsed.sentences[index];
   if (!sentence) return;
-  stopSpeech();
-  cancelGap();
-  const token = state.speechToken;
-  const firstWord = fromWord ?? sentence.words[0].index;
-  const charStart = state.parsed.words[firstWord].start;
-  const end = sentence.words.at(-1).start + sentence.words.at(-1).text.length;
-  setActive(-1, index);
-  refreshTimeline(state.timings[firstWord]?.start);
-  const onboundary = (event) => {
-    if (token !== state.speechToken || !$("follow").checked) return;
-    const position = charStart + event.charIndex;
-    const word = sentence.words.find(
-      (word) =>
-        position >= word.start && position < word.start + word.text.length,
-    );
-    if (word) {
-      setActive(word.index, index);
-      refreshTimeline(state.timings[word.index].start);
-    }
-  };
-  const onerror = (event) => {
-    if (token !== state.speechToken) return;
-    state.playing = false;
-    uiText($("play"), () => "Play");
-    if (!["interrupted", "canceled"].includes(event.error))
-      error(
-        "The selected voice could not speak. Test another available voice or use a recording.",
-      );
-  };
-  const onend = guard(() => {
-    if (token !== state.speechToken) return;
-    const next = state.repeat ? state.loopSentence : index + 1;
-    if (next >= state.parsed.sentences.length) {
-      state.playing = false;
-      uiText($("play"), () => "Play");
-      state.revealed = true;
-      setActive(-1, -1, false);
-      updateReaderOptions();
-      refreshTimeline(state.timings.at(-1)?.end);
-      return;
-    }
-    if ($("shadow").checked) {
-      state.playing = false;
-      uiText($("play"), () => "Play");
-      $("your-turn").hidden = false;
-      state.timer = setTimeout(
-        guard(() => {
-          if (token === state.speechToken) speakSentence(next);
-        }),
-        1800,
-      );
-    } else speakSentence(next);
-  });
+  // Preserve the session's Pause label through internal stop/start transitions.
+  // The controller still reports its real pending state, so a click can cancel.
+  state.speechContinuation = continuing;
   try {
-    speech.play({
-      ...speechSoundOptions(),
-      text: state.text.slice(charStart, end),
-      voice,
-      lang: voice.lang || languageConfig(state.language).locale,
-      rate: Number($("speed").value),
-      onboundary,
-      onerror,
-      onend,
-      onwordstatus: showWordStatus,
+    stopSpeech();
+    cancelGap();
+    const token = state.speechToken;
+    const firstWord = fromWord ?? sentence.words[0].index;
+    const charStart = state.parsed.words[firstWord].start;
+    const end = sentence.words.at(-1).start + sentence.words.at(-1).text.length;
+    setActive(-1, index);
+    refreshTimeline(state.timings[firstWord]?.start);
+    const onboundary = (event) => {
+      if (token !== state.speechToken || !$("follow").checked) return;
+      const position = charStart + event.charIndex;
+      const word = sentence.words.find(
+        (word) =>
+          position >= word.start && position < word.start + word.text.length,
+      );
+      if (word) {
+        setActive(word.index, index);
+        refreshTimeline(state.timings[word.index].start);
+      }
+    };
+    const onerror = (event) => {
+      if (token !== state.speechToken) return;
+      state.playing = false;
+      uiText($("play-label"), () => "Play");
+      if (!["interrupted", "canceled"].includes(event.error))
+        error(
+          "The selected voice could not speak. Test another available voice or use a recording.",
+        );
+    };
+    const onend = guard(() => {
+      if (token !== state.speechToken) return;
+      const next = state.repeat ? state.loopSentence : index + 1;
+      if (next >= state.parsed.sentences.length) {
+        state.playing = false;
+        uiText($("play-label"), () => "Play");
+        state.revealed = true;
+        setActive(-1, -1, false);
+        updateReaderOptions();
+        refreshTimeline(state.timings.at(-1)?.end);
+        return;
+      }
+      if ($("shadow").checked) {
+        state.playing = false;
+        uiText($("play-label"), () => "Play");
+        $("your-turn").hidden = false;
+        state.timer = setTimeout(
+          guard(() => {
+            if (token === state.speechToken) speakSentence(next);
+          }),
+          1800,
+        );
+      } else speakSentence(next, null, true);
     });
-  } catch (failure) {
-    state.playing = false;
-    uiText($("play"), () => "Play");
-    throw failure;
+    try {
+      speech.play({
+        ...speechSoundOptions(),
+        text: state.text.slice(charStart, end),
+        voice,
+        lang: voice.lang || languageConfig(state.language).locale,
+        rate: Number($("speed").value),
+        onboundary,
+        onerror,
+        onend,
+        onwordstatus: showWordStatus,
+      });
+    } catch (failure) {
+      state.playing = false;
+      uiText($("play-label"), () => "Play");
+      throw failure;
+    }
+    error("");
+  } finally {
+    state.speechContinuation = false;
   }
-  error("");
 }
 function togglePlay() {
   if (!state.parsed.words.length)
@@ -728,7 +742,7 @@ function tick(fromSeek = false) {
     if ($("shadow").checked && current >= 0) {
       audio.pause();
       $("your-turn").hidden = false;
-      uiText($("play"), () => "Cancel pause");
+      uiText($("play-label"), () => "Cancel pause");
       state.timer = setTimeout(
         guard(async () => {
           cancelGap();
@@ -1519,7 +1533,7 @@ pronunciation.addEventListener("play", () => {
   stopSpeech();
   audio.pause();
   state.playing = false;
-  uiText($("play"), () => "Play");
+  uiText($("play-label"), () => "Play");
 });
 pronunciation.addEventListener("error", () => {
   if (pronunciation.hasAttribute("src"))
@@ -1546,14 +1560,14 @@ audio.addEventListener("play", () => {
     return;
   }
   state.playing = true;
-  uiText($("play"), () => "Pause");
+  uiText($("play-label"), () => "Pause");
   cancelGap();
   cancelAnimationFrame(state.raf);
   animation();
 });
 audio.addEventListener("pause", () => {
   state.playing = false;
-  uiText($("play"), () => "Play");
+  uiText($("play-label"), () => "Play");
   cancelAnimationFrame(state.raf);
 });
 audio.addEventListener("seeking", () => {
@@ -1574,7 +1588,7 @@ audio.addEventListener(
     state.revealed = true;
     updateReaderOptions();
     state.playing = false;
-    uiText($("play"), () => "Play");
+    uiText($("play-label"), () => "Play");
     setActive(-1, -1, false);
   }),
 );
