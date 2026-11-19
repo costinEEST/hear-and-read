@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "wrangler dev",
+    "login": "wrangler login",
     "build": "node scripts/build-assets.mjs",
     "typecheck": "tsc --noEmit",
     "test:browser-logic": "node --test tests/*.test.mjs",
@@ -16,11 +17,11 @@
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
-    "@cloudflare/vitest-plugin": "^1.8.2",
-    "@cloudflare/workers-types": "^5.20261108.1",
+    "@cloudflare/vitest-plugin": "^1.8.5",
+    "@cloudflare/workers-types": "^5.20261119.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0",
-    "wrangler": "^4.162.0"
+    "vitest": "^5.1.1",
+    "wrangler": "^4.165.0"
   },
   "dependencies": {
     "entities": "^9.0.0"

@@ -18,6 +18,7 @@ A personal listening practice studio for **English, Hungarian, Romanian, Ukraini
   - [Timing accuracy](#timing-accuracy)
   - [Save your practice](#save-your-practice)
   - [Install and use offline](#install-and-use-offline)
+    - [Get the latest version](#get-the-latest-version)
   - [Development](#development)
   - [Interface translations](#interface-translations)
 
@@ -51,7 +52,7 @@ npm run deploy:check
 Sign in and deploy:
 
 ```sh
-npx wrangler login
+npm run login
 npm run deploy
 ```
 
