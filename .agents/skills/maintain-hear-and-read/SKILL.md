@@ -10,7 +10,7 @@ metadata:
 
 ## Purpose
 
-Maintain this repository's Hungarian, Spanish and German listening studio. Resolve file paths and run project commands from the repository root; links below are relative to this skill's directory.
+Maintain this repository's multilingual listening studio. Resolve file paths and run project commands from the repository root; links below are relative to this skill's directory.
 
 Keep the root-level browser files as plain HTML, CSS and browser-native JavaScript. Keep dependencies on the Worker/tooling side; do not introduce a frontend framework or browser bundler unless requested. The asset build copies only the explicit public-file allowlist into `dist/public/`. HTML extraction uses native HTMLRewriter; `entities` only decodes collected text.
 
@@ -22,6 +22,7 @@ For application commands, use the Node version in `.nvmrc`; install dependencies
 
 - For setup, running the app, Worker/tool changes, dependencies and backend validation, read [Worker environment and commands](references/worker-environment.md). Keep the two-command user quick start in the README; the reference owns detailed environment/development procedures. See [local setup](../../../README.md#run-locally) and [deployment](../../../README.md#deploy-to-cloudflare) for user-facing commands.
 - For importer, speech, persistence or styling changes, read the relevant section of [maintenance invariants and checks](references/maintenance.md). Dependency rationale stays in the Worker environment reference.
+- For page-language switching, dictionaries, translated UI or localized examples, read [localization](references/localization.md).
 - For practice-language selection, voice discovery/ranking and language/voice session preferences, read [language and voice goals](references/language-and-voices.md).
 - For branding, SEO or publication metadata, read [BRANDING.md](../../../BRANDING.md). It owns the production URL and the metadata/domain-change checklist.
 - Keep [README.md](../../../README.md) focused on using the studio and finding test commands. Put durable regression coverage in tests, maintenance constraints in this skill/reference, and actual check results in commit messages or task handoffs; do not maintain a separate dated verification log.
@@ -39,6 +40,7 @@ Documentation/skill edits, backend-only work (including `worker/jw.ts` extractio
 - `styles.css`: presentation and responsive styles.
 - `app.js`: playback UI, sentence sequencing, voice discovery, sync editing and persistence.
 - `speech-playback.js`: DOM-independent utterance lifecycle, previews/narration, pause/resume and cancellation. Keep callback invalidation inside the controller; app tokens also invalidate shadowing timers.
+- `languages.js`: shared language registry, Wiki hosts and localized publisher examples; `demos.js`: authored parallel demo sentences; `i18n.js` and `locales/`: interface translation.
 - `timing.js`: locale-aware parsing, timing and session validation; `speech.js`: language definitions, demos and pure voice ranking.
 - `worker/index.ts`: API routing/security; `worker/sources.ts`: source registry; `worker/jw.ts` and `worker/wiki.ts`: source extraction; `worker/http.ts`: bounded fetching; `worker/html.ts`: native HTMLRewriter record collection.
 - `wrangler.jsonc`: Worker/Static Assets deployment; `scripts/build-assets.mjs`: public-asset allowlist and static headers.

@@ -6,7 +6,7 @@
 
 [**Open Hear & Read →**](https://hear-and-read.costineest.workers.dev/)
 
-A personal listening practice studio for **Hungarian, Spanish and German**, with audio, highlighted text, sentence looping, and editable word timings. Import Hungarian content from supported websites, or bring your own audio and text in any of the three practice languages. Built with plain HTML, CSS and JavaScript, with a TypeScript Cloudflare Worker for website imports. HTML extraction uses Cloudflare's built-in HTMLRewriter; no browser automation service is needed.
+A personal listening practice studio for **English, Hungarian, Romanian, Ukrainian, Russian, Bulgarian, Serbian, Spanish, Italian, Polish, German and French**, with audio, highlighted text, sentence looping, and editable word timings. Import content from supported websites, or bring your own audio and text in any of the 12 practice languages. English is the default for both the page and practice content. Built with plain HTML, CSS and JavaScript, with a TypeScript Cloudflare Worker for website imports. HTML extraction uses Cloudflare's built-in HTMLRewriter; no browser automation service is needed.
 
 ## Contents
 
@@ -62,7 +62,8 @@ The [free plan limits](https://developers.cloudflare.com/workers/platform/limits
 ## Start practicing
 
 - **Website content:** under **Choose your content**, select a website or **Detect from URL**, paste a page URL, and select **Import content**. **Use an example** fills in a sample URL without importing it automatically.
-- **Practice language:** choose **Magyar / Hungarian**, **Español / Spanish**, or **Deutsch / German**. This sets pronunciation and sentence handling; it does not translate your text. Custom text, drafts and recordings are preserved. When viewing an untouched demo, choosing a language loads that language's demo.
+- **Page language:** use the header selector to translate menus, help, dialogs and messages. It preserves playback and unsaved edits. The URL (`?lang=ro`, for example) overrides the remembered page preference; a first visit defaults to English. This choice is independent of the practice language.
+- **Practice language:** choose any of the 12 languages from the select in **Choose your content**. This sets pronunciation and sentence handling; it does not translate your text. Custom text, drafts and recordings are preserved. When viewing an untouched demo, choosing a language loads that language's demo.
 - **Your own recording:** select **Original recording**, expand **Use your own audio** and select a file or paste an HTTPS audio URL. Paste matching text in the selected language, then press **Apply text**.
 - **Browser voice:** leave the voice on **Auto · best available**, use **Test voice**, then press **Play**. Only the highest available quality tier is offered; natural/neural, premium and enhanced variants are preferred over standard voices. Recommendations use voice metadata, not a measured audio-quality score. If only a standard voice exists, the app says so; it never substitutes another language. Use **Refresh voices** after installing voices on your device.
 
@@ -72,19 +73,19 @@ To practice pronunciation, choose **Speak this word** for the current word (also
 
 Choose **Highlight style** above the reader: **Background**, **Underline**, or **Background + underline**. The separate Highlight control selects words, sentences, both or Off. Underlines use a thicker stroke for the active word and a thinner stroke for the sentence.
 
-Click words to seek. Repeat a sentence, add 1.8-second shadowing pauses, blur/hide the text, or switch off **Follow words** to move the highlight manually. English translations are provided only for the built-in demos. Keyboard shortcuts outside controls are Space to play/pause and ← / → to change sentence. Native buttons, inputs and word controls also work from the keyboard.
+Click words to seek. Repeat a sentence, add 1.8-second shadowing pauses, blur/hide the text, or switch off **Follow words** to move the highlight manually. Built-in demos offer authored translations into the selected page language. User and imported text is not automatically translated. Keyboard shortcuts outside controls are Space to play/pause and ← / → to change sentence. Native buttons, inputs and word controls also work from the keyboard.
 
-Voice choices are remembered separately for each language in this browser. Sessions also save their practice language and voice preference. Available voices vary across browser/device combinations. Some voices need an online speech service; the app identifies them. Natural/premium quality and word-boundary events are not guaranteed. Install enhanced/premium system voices for more choices, or use a human recording. Current website imports remain Hungarian and switch the practice language to Hungarian explicitly.
+Voice choices are remembered separately for each language in this browser. Sessions also save their practice language and voice preference. Available voices vary across browser/device combinations. Some voices need an online speech service; the app identifies them. Natural/premium quality and word-boundary events are not guaranteed. Install enhanced/premium system voices for more choices, or use a human recording. Website imports set the practice language from the source URL while preserving the page language. Example URLs and placeholders follow the practice language; your own pasted URL is retained. Legacy sessions without a language still load as Hungarian.
 
 | Website | What is imported | How to listen |
 | --- | --- | --- |
-| JW.org (Hungarian) | Text, original recording, and publisher segment timings when available | Original recording is selected automatically. |
-| Hungarian Wikipedia | Article paragraphs, excluding references/navigation | Browser voice is selected; you can add your own matching recording. |
-| Hungarian Wiktionary | The entry's Hungarian definitions and available pronunciation clip | Browser voice reads the definitions. A separate player pronounces the word only. |
+| JW.org | Text, original recording, and publisher segment timings when available | Original recording is selected automatically. |
+| Wikipedia | Article paragraphs, excluding references/navigation | Browser voice is selected; you can add your own matching recording. |
+| Wiktionary | The entry's definitions in the source edition’s language and available pronunciation clip | Browser voice reads the definitions. A separate player pronounces the word only. |
 
 Website imports are independent of the listening method. More source adapters can be added; unsupported websites can still be used by pasting text manually. Import failures preserve your current practice. Some websites decline automated requests or impose rate limits; if this happens, open the page and paste its text, or try later. The importer does not bypass access restrictions.
 
-Imported Wikipedia/Wiktionary text retains its original-page, contributor-history and license links in the reader and saved/exported sessions. Article text is limited to 100,000 characters, with a notice if shortened. Wiktionary entries without a Hungarian section cannot be imported automatically.
+Imported Wikipedia/Wiktionary text retains its original-page, contributor-history and license links in the reader and saved/exported sessions. Article text is limited to 100,000 characters, with a notice if shortened. Wiktionary entries without a matching language section cannot be imported automatically.
 
 ## Timing accuracy
 
@@ -121,3 +122,9 @@ The [project maintenance skill](.agents/skills/maintain-hear-and-read/SKILL.md) 
 Run `npm run typecheck` and `npm test`. Tests cover browser parsing, timing, session validation, voice ranking and speech-controller lifecycle behavior using injected speech engines, plus source extraction and API safeguards in Cloudflare's local Workers runtime. `npm run deploy:check` bundles the Worker and assets without publishing. Detailed checks and browser smoke-test procedures are documented in the maintenance skill. Synthetic speech tests do not establish native voice quality or availability, and fixture imports do not establish live publisher availability.
 
 The studio is intended for personal listening practice. Sessions stay in each browser; deployment does not add accounts or cross-device storage. Website extraction can change or fail, background tabs can delay loop/shadowing boundaries, and device/browser speech capabilities vary. Playback is a listening aid rather than a sample-accurate audio editor.
+
+## Interface translations
+
+The app remains plain browser JavaScript. `languages.js` shares the supported language registry and localized source examples with the Worker. `demos.js` contains parallel authored practice sentences. `i18n.js` binds static text and dynamic messages without replacing reader or audio nodes; `locales/<code>.json` holds each UI dictionary. English message text is the dictionary key. `{p0}`, `{p1}`, etc. are substitution slots and must survive translation; `count.*` objects use `Intl.PluralRules`.
+
+When editing UI copy, update the English dictionary and every enabled translation. Keep user text, titles, voice identifiers, source names and URLs independent of UI translation. Run `npm run test:browser-logic` for dictionary coverage, placeholder safety, plural rules, locale-loading races and practice/session checks. Locale files and client modules must remain in the asset allowlist and Wrangler watch list. Language changes happen in the current document. These client translations do not create separately rendered multilingual SEO pages.

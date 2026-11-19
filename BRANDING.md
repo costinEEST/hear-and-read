@@ -2,11 +2,11 @@
 
 **Repository slug:** `hear-and-read`  
 **Tagline:** Listen. Follow. Repeat.  
-**Short description:** A free listening practice studio for Hungarian, Spanish and German, with audio, highlighted text, sentence loops and editable word timings.
+**Short description:** A free listening practice studio for 12 languages, with audio, highlighted text, sentence loops and editable word timings.
 
 **Public app:** [hear-and-read.costineest.workers.dev](https://hear-and-read.costineest.workers.dev/)
 
-Use **Hear & Read** in interface text and prose; use `hear-and-read` for repository/package names and filenames. The practice languages are Hungarian, Spanish and German; interface text remains English and website imports currently provide Hungarian content. Do not imply automatic translation, universal language support or guaranteed neural voices. Keep timing claims explicit: publisher segment boundaries and interpolated word timings have different accuracy.
+Use **Hear & Read** in interface text and prose; use `hear-and-read` for repository/package names and filenames. English is the default page and practice language. Both selectors support English, Hungarian, Romanian, Ukrainian, Russian, Bulgarian, Serbian, Spanish, Italian, Polish, German and French. Website examples follow the practice language; imported content carries its source language. The page language is independent of the practice language. Do not imply automatic translation, universal language support or guaranteed neural voices. Keep timing claims explicit: publisher segment boundaries and interpolated word timings have different accuracy.
 
 ## Visual identity
 
@@ -36,14 +36,14 @@ The header uses an empty image alt because the adjacent heading already names th
 
 The production origin is `https://hear-and-read.costineest.workers.dev`. Use the trailing-slash home URL as the canonical application URL: `https://hear-and-read.costineest.workers.dev/`.
 
-`index.html` contains a descriptive search title, description, application name, light/dark theme colors, canonical link, Open Graph/Twitter card metadata and a Schema.org `WebApplication` JSON-LD block. Social titles retain the tagline; search metadata names the practice languages. Structured data describes the English interface and current features, links to the live app and brand images, and identifies free access without adding invented ratings or author claims. It does not guarantee a search rich result.
+`index.html` contains a descriptive search title, description, application name, light/dark theme colors, canonical link, Open Graph/Twitter card metadata and a Schema.org `WebApplication` JSON-LD block. Social titles retain the tagline; search metadata describes multilingual practice. Static structured data defaults to English; client language switching updates its language and description. It describes current features, links to the live app and brand images, and identifies free access without adding invented ratings or author claims. It does not guarantee a search rich result.
 
 Publication URLs must stay aligned:
 
 - Canonical link, `og:url`, JSON-LD `url` and the sitemap entry: `https://hear-and-read.costineest.workers.dev/`.
 - Open Graph and Twitter sharing image: `https://hear-and-read.costineest.workers.dev/assets/social-card.png` (1200×630).
 - `robots.txt`: allows ordinary search crawling, excludes `/api/`, disallows listed AI training/search/user-fetch agents, and points to `https://hear-and-read.costineest.workers.dev/sitemap.xml`. The additional `Content-Signal` preference allows search and declines AI training/input use. These are voluntary crawler preferences, not access control; they do not guarantee exclusion from every AI feature or stop unidentified bots. Keep verified crawler names current using the [Cloudflare documentation](https://developers.cloudflare.com/bots/additional-configurations/managed-robots-txt/) and crawler operators' documentation.
-- `sitemap.xml`: lists only the home page. Practice languages are not translated interface pages; do not add misleading `hreflang` alternates or URLs for imported content or saved sessions.
+- `sitemap.xml`: lists only the home page. Client-side language choices do not produce separately rendered pages; do not add misleading `hreflang` alternates or URLs for imported content or saved sessions.
 
 For a domain change or fork, update `index.html`, `robots.txt`, `sitemap.xml`, this document and the README together. The asset build allowlists the crawler files. After deploying, check the page and PNG are publicly accessible and validate structured data and sharing previews. Search and social services can cache older metadata. Do not use localhost or a GitHub source-code page as the application's canonical URL.
 
