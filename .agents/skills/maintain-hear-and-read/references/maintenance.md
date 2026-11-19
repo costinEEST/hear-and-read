@@ -1,6 +1,6 @@
 # Maintenance invariants and checks
 
-Read the section relevant to the change. The main skill owns language/voice policy and general validation; the Worker environment reference owns setup commands. Dependency rationale is documented in the Worker environment reference.
+Read the section relevant to the change. The language-and-voices reference linked from SKILL.md owns language/voice policy; the main skill owns general validation; the Worker environment reference owns setup commands. Dependency rationale is documented in the Worker environment reference.
 
 ## Content imports and serving
 

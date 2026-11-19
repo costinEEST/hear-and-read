@@ -1,6 +1,9 @@
 ---
 name: maintain-hear-and-read
-description: Use for Hear & Read implementation and dev setup, including browser speech and Worker imports. Do not use for unrelated repositories.
+description: Use when implementing, debugging or setting up Hear & Read in this repository, including browser speech, timed recordings, sessions and Worker importers.
+metadata:
+  author: Constantin Câmpean
+  tags: [hear-and-read, speech, cloudflare-workers]
 ---
 
 # Maintain Hear & Read
@@ -13,24 +16,21 @@ Keep the root-level browser files as plain HTML, CSS and browser-native JavaScri
 
 ## Prerequisites
 
-For application commands, use the Node version in `.nvmrc`; install dependencies with `npm ci` when setting up or restoring the committed lockfile. See the environment reference for setup. Documentation-only work does not require dependency installation. Browser verification needs a running local Wrangler instance and an available browser tool. Read the installed `modern-web-guidance` skill for frontend changes as described below; if unavailable, report that gap and consult current official platform documentation for the affected APIs.
+For application commands, use the Node version in `.nvmrc`; install dependencies with `npm ci` when setting up or restoring the committed lockfile. See the environment reference for setup. Documentation-only work does not require dependency installation. Browser verification needs a running local Wrangler instance and an available browser tool. Use the frontend guidance below when changing browser behavior or presentation.
 
 ## Instructions
 
-- For setup, running the app, Worker/tool changes, dependencies and backend validation, read [Worker environment and commands](references/worker-environment.md). Keep the two-command user quick start in the README; the reference links to it and owns detailed environment/development procedures.
+- For setup, running the app, Worker/tool changes, dependencies and backend validation, read [Worker environment and commands](references/worker-environment.md). Keep the two-command user quick start in the README; the reference owns detailed environment/development procedures. See [local setup](../../../README.md#run-locally) and [deployment](../../../README.md#deploy-to-cloudflare) for user-facing commands.
 - For importer, speech, persistence or styling changes, read the relevant section of [maintenance invariants and checks](references/maintenance.md). Dependency rationale stays in the Worker environment reference.
+- For practice-language selection, voice discovery/ranking and language/voice session preferences, read [language and voice goals](references/language-and-voices.md).
 - For branding, SEO or publication metadata, read [BRANDING.md](../../../BRANDING.md). It owns the production URL and the metadata/domain-change checklist.
 - Keep [README.md](../../../README.md) focused on using the studio and finding test commands. Put durable regression coverage in tests, maintenance constraints in this skill/reference, and actual check results in commit messages or task handoffs; do not maintain a separate dated verification log.
 
-## Modern Web Guidance: when
+## Frontend guidance
 
-Consult the available `modern-web-guidance` skill **before changing HTML structure, CSS layout/styles/motion, or client-side JavaScript behavior**, including browser APIs, accessibility, performance and frontend security. For mixed tasks, apply it only to the affected frontend portion.
+Before HTML, CSS or client-side JavaScript changes, read the installed `modern-web-guidance` skill and follow its current search/retrieve workflow. Use focused capability searches and returned guide IDs; keep its evolving CLI instructions there. If unavailable, report the gap and consult current official platform documentation for affected APIs.
 
-Skip its skill and CLI for documentation/skill edits, backend-only work, tests, dependency/tooling configuration, Git, infrastructure and data-only changes that do not change browser behavior. Opening a browser to check an unchanged page does not itself trigger a lookup. Changing `worker/jw.ts` extraction alone does not trigger guidance; changing how `app.js` renders its response does.
-
-## Modern Web Guidance: how
-
-Read the installed `modern-web-guidance/SKILL.md` and follow its current search/retrieve workflow, version flag, permissions, saved-output reading and handoff requirements. Search a focused web capability; use returned guide IDs and proceed without forcing unrelated guidance when the catalog does not cover it. Do not duplicate or pin that skill's evolving CLI instructions here.
+Documentation/skill edits, backend-only work (including `worker/jw.ts` extraction), tests, dependencies, tooling, Git and data-only changes do not trigger that workflow. Checking an unchanged page in a browser does not trigger it either; changing how `app.js` renders Worker data does.
 
 ## Change the active application
 
@@ -46,21 +46,11 @@ Read the installed `modern-web-guidance/SKILL.md` and follow its current search/
 
 Keep assets in `assets/`, regression tests and fixtures in `tests/`, and project skills in `.agents/skills/`. Build future extension work separately when requested.
 
-Keep content-source selection independent of browser speech/full-text audio. Register new sources in `worker/sources.ts`; preserve source credits and separate word-pronunciation clips from full-text narration. Report declined automated access without bypassing it. Preserve publisher segment boundaries while labeling interpolated words/sentences as estimates. Preserve complete timing validation, position-based repeated-word matching, imported timings during metadata loading, saved speed, cancellation of obsolete imports/voice/shadowing work, and local-only audio-file handling.
-
-## Language and voice goals
-
-- Offer exactly Hungarian (`hu`), Spanish (`es`) and German (`de`) as practice languages. Keep controls in English; do not imply translated UI or automatic text translation. Current website adapters import Hungarian and must return their language explicitly.
-- Use only voices actually exposed by `speechSynthesis.getVoices()`. Handle asynchronous `voiceschanged`, an initially empty catalog, refresh, and unavailable saved choices. Never infer voice availability from browser brand or a cloud-service catalog.
-- Prefer natural/neural, premium and enhanced metadata signals, then known real language-specific system families. Exclude novelty, eSpeak and MBROLA voices. Offer only the highest available tier, retaining dialect choices within that tier. Do not substitute another language or label a standard voice neural.
-- Treat ranking as a heuristic: the browser has no measured quality score, and better sound does not guarantee word-boundary events. Local/default flags are tie breakers, not evidence of premium quality. Identify potentially online voices and provide preview plus install/refresh/recording guidance for standard-only or missing voices.
-- Set utterance language to the chosen voice locale and use the practice locale for segmentation. Update reader/editor language attributes. Cancel obsolete speech, previews and shadowing on language changes without discarding custom text, unsaved drafts or recordings. Preserve alignment when words are unchanged; explicitly report any necessary timing reset.
-- Replace only untouched demo text automatically when choosing another language. Save per-language voice choices and session language/voice preferences; legacy sessions default to Hungarian. An unavailable saved voice must degrade visibly to a matching Auto choice, never silently to another language.
-- Test ranking, exclusions, dialects, metadata variants and legacy sessions with synthetic catalogs. Separately verify real exposed voices and browser UI behavior; fixture voices are not proof of audible quality or cloud availability.
+Keep source selection independent of browser speech and full-text audio. Preserve publisher segment boundaries; label interpolated word/sentence timings as estimates. Preserve complete timing validation and position-based repeated-word matching. Import, speech and persistence constraints live in the maintenance reference.
 
 ## Validate the affected behavior
 
-- For JavaScript timing/parsing/session changes, run `npm run test:browser-logic`; use `node --check app.js` when changing the browser module. The Node 26 LTS baseline in `.nvmrc` and `package.json` runs tooling; Wrangler runs the local Worker.
+- For speech/voice, timing/parsing or session changes, run `npm run test:browser-logic`; use `node --check app.js` when changing the browser module. The Node baseline in `.nvmrc` and `package.json` runs tooling; Wrangler runs the local Worker.
 - For Worker/dependency changes, use the scoped checks in the Worker environment reference.
 - For frontend behavior/layout changes, start Wrangler locally using that reference and use Chrome DevTools MCP when available. Test changed controls and relevant failure paths, inspect console/network, and confirm advancing audio before claiming playback works. An HTTP 200 alone is insufficient.
 - For layout changes, check 320px touch reflow, short landscape and equivalent 200% text sizing. Check keyboard operation, focus restoration, reduced motion and high contrast when relevant. Lighthouse supports these observations; it does not prove every interaction.
@@ -70,15 +60,9 @@ Report actual checks and limits in the task handoff or commit message. Distingui
 
 ## Examples
 
-- “Fix German voice selection after loading a session”: read the persistence and speech sections of the maintenance reference, apply Modern Web Guidance, update the affected browser module and synthetic-catalog coverage, then verify the changed flow with exposed browser voices.
-- “Add a website importer”: read both references, register the adapter in `worker/sources.ts`, preserve bounded fetching and the shared response shape, and run the backend checks. Apply Modern Web Guidance if browser rendering also changes.
+- “Fix German voice selection after loading a session”: read the language/voice reference and the persistence and speech sections of the maintenance reference, apply Modern Web Guidance, update the affected browser module and synthetic-catalog coverage, then verify the changed flow with exposed browser voices.
+- “Add a website importer”: read the Worker environment reference and the content-import section of the maintenance reference, register the adapter in `worker/sources.ts`, preserve bounded fetching and the shared response shape, and run the backend checks. Apply Modern Web Guidance if browser rendering also changes.
 - “Correct the setup documentation”: check commands against `package.json`, `.nvmrc` and `wrangler.jsonc`; follow the Worker environment reference without starting the speech/layout test matrix.
-
-For a voice-ranking-only change in `speech.js`, the focused logic check is:
-
-```sh
-npm run test:browser-logic
-```
 
 ## Troubleshooting
 

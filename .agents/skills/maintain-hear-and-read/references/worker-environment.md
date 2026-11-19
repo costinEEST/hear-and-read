@@ -1,6 +1,6 @@
 # Worker environment and commands
 
-Use the Node LTS baseline pinned in `.nvmrc` and npm from the repository root. With nvm, run `nvm install` and `nvm use` first. Keep the version pin, `package.json` engine constraint and README setup instructions aligned when adopting a new baseline; `.npmrc` enables strict engine checking for dependency installation. Restart running tooling after an upgrade. Follow the two-command [README quick start](../../../../README.md#run-locally). `npm ci` installs the committed lockfile; no Python environment is needed.
+Use the Node LTS baseline pinned in `.nvmrc` and npm from the repository root. With nvm, run `nvm install` and `nvm use` first. Keep the version pin, `package.json` engine constraint and README setup instructions aligned when adopting a new baseline; `.npmrc` enables strict engine checking for dependency installation. Restart running tooling after an upgrade. Follow the two-command README quick start linked from SKILL.md. `npm ci` installs the committed lockfile; no Python environment is needed.
 
 ## Runtime and dependencies
 
@@ -16,7 +16,7 @@ Declare dependency changes intentionally with npm and commit `package.json` and 
 
 The root HTML/CSS/browser JS remains the source of truth. `npm run build` copies only explicit public files to `dist/public/` and writes security headers. Never point `assets.directory` at the root. `/api/*` runs the Worker; existing static assets bypass it. Import endpoints retain the same JSON contract used by the frontend. There is no database or server-side session storage. When adding a public source file, update both the asset allowlist and `build.watch_dir` in `wrangler.jsonc`; do not edit generated assets. Keep the static `_headers` policy and API security headers aligned when changing either policy.
 
-For metadata/domain changes, follow [BRANDING.md](../../../../BRANDING.md). Keep the canonical link, Open Graph URL, absolute sharing-image URLs, JSON-LD, robots sitemap URL and sitemap entry consistent. Rebuild and check that crawler files are served with the right content types. Metadata-only changes need these focused checks and a deployment dry run, not the speech/layout test matrix.
+For metadata/domain changes, follow BRANDING.md linked from SKILL.md. Keep the canonical link, Open Graph URL, absolute sharing-image URLs, JSON-LD, robots sitemap URL and sitemap entry consistent. Rebuild and check that crawler files are served with the right content types. Metadata-only changes need these focused checks and a deployment dry run, not the speech/layout test matrix.
 
 ## Verification and deployment
 
@@ -34,4 +34,4 @@ Exercise affected endpoints through local Wrangler when changing integration beh
 
 Cloudflare Workers Builds recognizes the root `.nvmrc`; if a build-level `NODE_VERSION` override is configured, keep it consistent with the project pin. This selects the build tool runtime, not the deployed workerd runtime.
 
-Deployment instructions are in [the README](../../../../README.md#deploy-to-cloudflare). Deploying updates the named Worker in the authenticated account; a dry run does not require publication. Use Workers Free for the user's free hosting goal; do not introduce paid bindings or browser automation. Check current platform limits and measure production imports before claiming all pages fit the free CPU allowance.
+Deployment instructions are in the README deployment section linked from SKILL.md. Deploying updates the named Worker in the authenticated account; a dry run does not require publication. Use Workers Free for the user's free hosting goal; do not introduce paid bindings or browser automation. Check current platform limits and measure production imports before claiming all pages fit the free CPU allowance.
