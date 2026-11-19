@@ -413,6 +413,35 @@ describe("Worker API", () => {
     expect(catalog.status).toBe(200);
     await catalog.arrayBuffer();
   });
+
+  it("serves every offline shell resource without redirects and publishes install metadata", async () => {
+    const bindings = env as unknown as Parameters<typeof worker.fetch>[1];
+    const get = (path: string) =>
+      worker.fetch(new Request(`https://studio.example${path}`), bindings);
+    const script = await get("/sw.js");
+    expect(script.status).toBe(200);
+    expect(script.headers.get("Cache-Control")).toBe("no-cache");
+    const source = await script.text();
+    const urls = JSON.parse(
+      source.match(/const SHELL_URLS = (\[[^;]+\]);/u)![1],
+    ) as string[];
+    expect(urls).toContain("/");
+    expect(urls).not.toContain("/index.html");
+    for (const url of urls) {
+      const response = await get(url);
+      expect(response.status, url).toBe(200);
+      expect(response.headers.get("Location"), url).toBeNull();
+      await response.arrayBuffer();
+    }
+    const manifest = await get("/manifest.webmanifest");
+    expect(manifest.headers.get("Content-Type")).toContain(
+      "application/manifest+json",
+    );
+    expect(await manifest.json()).toMatchObject({
+      id: "/",
+      display: "standalone",
+    });
+  });
 });
 
 describe("multilingual sources", () => {

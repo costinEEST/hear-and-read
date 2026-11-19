@@ -27,6 +27,7 @@ Keep system sans-serif for controls and the wordmark, with Georgia for reading t
 
 - [Logo](assets/logo.svg): standalone 64×64 vector symbol with an accessible title/description.
 - [Favicon](assets/favicon.svg): simplified 32×32 vector symbol, legible on light and dark browser chrome.
+- `assets/icon-192.png`, `assets/icon-512.png` and `assets/apple-touch-icon.png`: rasterizations of the existing logo for installation and home screens. `assets/icon-maskable-512.png` keeps the logo inside the central safe area on a solid green background for adaptive icon cropping.
 - [Wordmark](assets/wordmark.svg): cream-backed horizontal identity for the README and shared materials.
 - [Social source](assets/social-card.svg) and [PNG](assets/social-card.png): 1200×630 sharing image. The PNG is a browser rasterization of the SVG; edit the SVG first, then regenerate its PNG.
 

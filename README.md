@@ -10,12 +10,16 @@ A personal listening practice studio for **English, Hungarian, Romanian, Ukraini
 
 ## Contents
 
-- [Run locally](#run-locally)
-- [Deploy to Cloudflare](#deploy-to-cloudflare)
-- [Start practicing](#start-practicing)
-- [Timing accuracy](#timing-accuracy)
-- [Save your practice](#save-your-practice)
-- [Development](#development)
+- [Hear \& Read](#hear--read)
+  - [Contents](#contents)
+  - [Run locally](#run-locally)
+  - [Deploy to Cloudflare](#deploy-to-cloudflare)
+  - [Start practicing](#start-practicing)
+  - [Timing accuracy](#timing-accuracy)
+  - [Save your practice](#save-your-practice)
+  - [Install and use offline](#install-and-use-offline)
+  - [Development](#development)
+  - [Interface translations](#interface-translations)
 
 ## Run locally
 
@@ -77,10 +81,10 @@ Click words to seek. Repeat a sentence, add 1.8-second shadowing pauses, blur/hi
 
 Voice choices are remembered separately for each language in this browser. Sessions also save their practice language and voice preference. Available voices vary across browser/device combinations. Some voices need an online speech service; the app identifies them. Natural/premium quality and word-boundary events are not guaranteed. Install enhanced/premium system voices for more choices, or use a human recording. Website imports set the practice language from the source URL while preserving the page language. Example URLs and placeholders follow the practice language; your own pasted URL is retained. Legacy sessions without a language still load as Hungarian.
 
-| Website | What is imported | How to listen |
-| --- | --- | --- |
-| JW.org | Text, original recording, and publisher segment timings when available | Original recording is selected automatically. |
-| Wikipedia | Article paragraphs, excluding references/navigation | Browser voice is selected; you can add your own matching recording. |
+| Website    | What is imported                                                                          | How to listen                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| JW.org     | Text, original recording, and publisher segment timings when available                    | Original recording is selected automatically.                                    |
+| Wikipedia  | Article paragraphs, excluding references/navigation                                       | Browser voice is selected; you can add your own matching recording.              |
 | Wiktionary | The entry's definitions in the source edition’s language and available pronunciation clip | Browser voice reads the definitions. A separate player pronounces the word only. |
 
 Website imports are independent of the listening method. More source adapters can be added; unsupported websites can still be used by pasting text manually. Import failures preserve your current practice. Some websites decline automated requests or impose rate limits; if this happens, open the page and paste its text, or try later. The importer does not bypass access restrictions.
@@ -115,11 +119,21 @@ An external forced-alignment tool can prepare word timestamps, but its output mu
 
 Uploaded audio stays in memory and is not saved or uploaded. Select the original local audio file again after reloading or importing its saved session. Browser storage may be cleared by your browser; export sessions you want to keep. If storage is blocked or full, practice and JSON export still work.
 
+## Install and use offline
+
+Hear & Read can be installed as a standalone app from its HTTPS website. On Android, open it in Chrome and use the browser menu's **Install app** or **Add to Home screen** option. On iPhone or iPad, open it in Safari, choose **Share → Add to Home Screen**, and enable **Open as Web App** if offered. Installation remains optional; the browser version has the same practice features.
+
+Open the app online first and allow its initial resources to finish downloading before going offline. The app caches its interface, all 12 interface languages, demos and icons. Saved text sessions, text editing, timing tools and session import/export work offline. Save or export a practice before closing the app; unsaved edits are not automatically restored.
+
+For offline listening, use a downloaded audio file or a locally available system voice. Online voices, website imports, remote recordings and pronunciation clips require a connection and are not downloaded for offline use. Local audio files must be selected again after reopening a session. If website imports were unavailable when the app opened, reopen or reload it after reconnecting to restore the source list.
+
+Updates download in the background while online and take effect after all app tabs and installed-app windows have closed. Updates do not force a reload during practice. Browsers can reclaim cached files or local storage, so export sessions for a portable backup; installation does not add cloud sync or permanent storage. Offline support requires HTTPS (or localhost for development); opening `index.html` directly is not supported.
+
 ## Development
 
 The [project maintenance skill](.agents/skills/maintain-hear-and-read/SKILL.md) covers the source layout, development workflow, checks, and when to use Modern Web Guidance. See [BRANDING.md](BRANDING.md) for brand assets and publication metadata. Browser source files live at the project root, the TypeScript backend in `worker/`, build tooling in `scripts/`, and regression checks in `tests/`. `robots.txt` and `sitemap.xml` describe the public landing page; imported documents and browser sessions do not create public pages.
 
-Run `npm run typecheck` and `npm test`. Tests cover browser parsing, timing, session validation, voice ranking and speech-controller lifecycle behavior using injected speech engines, plus source extraction and API safeguards in Cloudflare's local Workers runtime. `npm run deploy:check` bundles the Worker and assets without publishing. Detailed checks and browser smoke-test procedures are documented in the maintenance skill. Synthetic speech tests do not establish native voice quality or availability, and fixture imports do not establish live publisher availability.
+Run `npm run typecheck` and `npm test`. Tests cover browser parsing, timing, session validation, voice ranking and speech-controller lifecycle behavior using injected speech engines, plus source extraction and API safeguards in Cloudflare's local Workers runtime. PWA checks cover offline shell caching, cache cleanup, installation metadata and icon sizes, and public asset delivery without redirects. `npm run deploy:check` bundles the Worker and assets without publishing. Detailed checks and browser smoke-test procedures are documented in the maintenance skill. Synthetic speech tests do not establish native voice quality or availability, fixture imports do not establish live publisher availability, and automated PWA checks do not establish installation on a physical mobile device.
 
 The studio is intended for personal listening practice. Sessions stay in each browser; deployment does not add accounts or cross-device storage. Website extraction can change or fail, background tabs can delay loop/shadowing boundaries, and device/browser speech capabilities vary. Playback is a listening aid rather than a sample-accurate audio editor.
 
@@ -128,3 +142,5 @@ The studio is intended for personal listening practice. Sessions stay in each br
 The app remains plain browser JavaScript. `languages.js` shares the supported language registry and localized source examples with the Worker. `demos.js` contains parallel authored practice sentences. `i18n.js` binds static text and dynamic messages without replacing reader or audio nodes; `locales/<code>.json` holds each UI dictionary. English message text is the dictionary key. `{p0}`, `{p1}`, etc. are substitution slots and must survive translation; `count.*` objects use `Intl.PluralRules`.
 
 When editing UI copy, update the English dictionary and every enabled translation. Keep user text, titles, voice identifiers, source names and URLs independent of UI translation. Run `npm run test:browser-logic` for dictionary coverage, placeholder safety, plural rules, locale-loading races and practice/session checks. Locale files and client modules must remain in the asset allowlist and Wrangler watch list. Language changes happen in the current document. These client translations do not create separately rendered multilingual SEO pages.
+
+For Hungarian copy, use the project’s [Interpreting Hungarian skill](.agents/skills/interpreting-hungarian/SKILL.md) and its UI conventions to review grammar, terminology and consistency of address. Preserve message meaning and substitution slots when improving wording.

@@ -12,6 +12,13 @@ Read the section relevant to the change. The language-and-voices reference linke
 - Keep pronunciation clips separate from full-text audio and definition timings. Surface HTTP 403/429 with manual-paste/retry guidance; do not bypass declined access.
 - Source replacement cancels obsolete imports/playback and revokes obsolete object URLs. Validate complete timing imports before replacing alignment; audio metadata must not overwrite imported timings or saved speed.
 
+## Installation and offline support
+
+- Keep the manifest identity and start URL stable at `/`. Preserve normal browser access when installation or service workers are unavailable. Use HTTPS or localhost for service-worker verification.
+- Build the offline shell from the public asset allowlist, including every dictionary and client module. Derive its cache version from file contents and the service-worker template. Cache the canonical `/` response rather than redirected `/index.html`; verify every precached URL returns 200 without redirects through the actual asset binding.
+- Cache only the app shell. Keep API calls, remote audio, pronunciation clips and user content outside the service-worker cache. Sessions remain in existing local storage; local audio requires re-selection. Do not promise offline availability for online voices or permanent storage.
+- Let updates wait for all app windows to close; do not force activation or reload during practice. Activation deletes only obsolete caches with this app's shell prefix. Check offline reload with a language query, switching to a previously unused interface language, session save/load, and advancing local-audio playback. Physical mobile installation requires a separate device check.
+
 ## Speech and pronunciation
 
 - The controller owns utterance references, lifecycle notifications and stale-callback suppression; the app owns sequencing, highlighting and shadowing timers. Release a terminal utterance before calling completion, and invalidate callbacks before canceling the engine, which may call back synchronously.

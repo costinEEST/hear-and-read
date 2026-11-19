@@ -44,6 +44,7 @@ Documentation/skill edits, backend-only work (including `worker/jw.ts` extractio
 - `timing.js`: locale-aware parsing, timing and session validation; `speech.js`: language definitions, demos and pure voice ranking.
 - `worker/index.ts`: API routing/security; `worker/sources.ts`: source registry; `worker/jw.ts` and `worker/wiki.ts`: source extraction; `worker/http.ts`: bounded fetching; `worker/html.ts`: native HTMLRewriter record collection.
 - `wrangler.jsonc`: Worker/Static Assets deployment; `scripts/build-assets.mjs`: public-asset allowlist and static headers.
+- `manifest.webmanifest` and `pwa.js`: installation metadata and service-worker registration; `sw.js`: offline shell template populated by the asset build. Offline constraints and checks live in the maintenance reference.
 - `tests/`: active regression checks and fixtures.
 
 Keep assets in `assets/`, regression tests and fixtures in `tests/`, and project skills in `.agents/skills/`. Build future extension work separately when requested.
