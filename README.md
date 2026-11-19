@@ -129,7 +129,21 @@ Open the app online first and allow its initial resources to finish downloading 
 
 For offline listening, use a downloaded audio file or a locally available system voice. Online voices, website imports, remote recordings and pronunciation clips require a connection and are not downloaded for offline use. Local audio files must be selected again after reopening a session. If website imports were unavailable when the app opened, reopen or reload it after reconnecting to restore the source list.
 
-Updates download in the background while online and take effect after all app tabs and installed-app windows have closed. Updates do not force a reload during practice. Browsers can reclaim cached files or local storage, so export sessions for a portable backup; installation does not add cloud sync or permanent storage. Offline support requires HTTPS (or localhost for development); opening `index.html` directly is not supported.
+Browsers can reclaim cached files or local storage, so export sessions for a portable backup; installation does not add cloud sync or permanent storage. Offline support requires HTTPS (or localhost for development); opening `index.html` directly is not supported.
+
+### Get the latest version
+
+After a new version has been deployed:
+
+1. Open or reload Hear & Read while online. The browser checks for a service-worker update and downloads the new app files in the background. Allow the downloads to finish.
+2. Save or export any practice you want to keep, then close **all Hear & Read browser tabs and installed-app windows**. On mobile, dismiss the installed app from the app switcher rather than just returning to the home screen.
+3. Reopen the app to use the downloaded version. Reinstalling the PWA is not necessary.
+
+A normal refresh can download an update while leaving the current version active. The update waits until the existing app windows close, so it never forces a reload during practice. There is currently no in-app update notification or update button.
+
+For maintainers, a Git push publishes changes only when a connected Cloudflare build is configured to deploy that branch. Otherwise, run `npm run deploy` as described in [Deploy to Cloudflare](#deploy-to-cloudflare). A local build or deployment dry run does not update installed copies.
+
+The asset build automatically versions the service worker using a hash of the public files and worker source. Changes to those files produce a new deployed `/sw.js`; no manual version bump is needed. Edit the root `sw.js` only to change caching behavior, and leave generated `dist/public/sw.js` to the build. Keep the deployed service-worker URL stable at `/sw.js`.
 
 ## Development
 
