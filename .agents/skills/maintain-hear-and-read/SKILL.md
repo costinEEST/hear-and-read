@@ -48,6 +48,8 @@ Documentation/skill edits, backend-only work (including `worker/jw.ts` extractio
 
 Keep assets in `assets/`, regression tests and fixtures in `tests/`, and project skills in `.agents/skills/`. Build future extension work separately when requested.
 
+Keep temporary scripts, downloads, extracted directories and other scratch artifacts outside the project when practical. Before handing off a task, remove temporary files and directories created by that task inside the project, including ignored artifacts, unless they are part of the requested deliverable. Remove only artifacts known to have been created by the task; preserve pre-existing files, dependencies and normal build outputs such as `node_modules/`, `dist/` and `.wrangler/`. If a temporary artifact must remain, report its path and why it is still needed.
+
 Keep source selection independent of browser speech and full-text audio. Preserve publisher segment boundaries; label interpolated word/sentence timings as estimates. Preserve complete timing validation and position-based repeated-word matching. Import, speech and persistence constraints live in the maintenance reference.
 
 ## Validate the affected behavior
