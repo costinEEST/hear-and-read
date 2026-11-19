@@ -308,5 +308,12 @@
     "few": "{count} Fixpunkte",
     "many": "{count} Fixpunkte",
     "other": "{count} Fixpunkte"
-  }
+  },
+  "Settings": "Einstellungen",
+  "Edit text": "Text bearbeiten",
+  "Reader settings": "Leseeinstellungen",
+  "Content and language": "Inhalt und Sprache",
+  "Voice and audio": "Stimme und Audio",
+  "Saved sessions": "Gespeicherte Sitzungen",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Beim Öffnen der Einstellungen wird die Wiedergabe gestoppt. Drücke auf Abspielen, wenn du fortfahren möchtest."
 }

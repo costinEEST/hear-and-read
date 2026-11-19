@@ -308,5 +308,12 @@
     "few": "{count} метки",
     "many": "{count} меток",
     "other": "{count} метки"
-  }
+  },
+  "Settings": "Настройки",
+  "Edit text": "Редактировать текст",
+  "Reader settings": "Настройки чтения",
+  "Content and language": "Содержимое и язык",
+  "Voice and audio": "Голос и аудио",
+  "Saved sessions": "Сохранённые сеансы",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Открытие настроек останавливает воспроизведение. Нажмите «Воспроизвести», когда будете готовы продолжить."
 }

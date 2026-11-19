@@ -61,28 +61,25 @@
 <body>
   <a class="skip-link" href="#reading-title">Skip to reader</a>
   <header class="masthead">
-    <img class="brand-mark" src="assets/logo.svg" width="64" height="64" alt="">
-    <div>
-      <p class="eyebrow">Listen. Follow. Repeat.</p>
-      <h1>Hear <span>&amp;</span> Read</h1>
+    <div class="brand">
+      <img class="brand-mark" src="assets/logo.svg" width="64" height="64" alt="">
+      <div class="brand-text">
+        <p class="eyebrow">Listen. Follow. Repeat.</p>
+        <h1>Hear <span>&amp;</span> Read</h1>
+      </div>
     </div>
-    <label class="page-language" for="page-language"><span>Page language</span>
-      <select id="page-language" name="page-language" aria-describedby="page-language-help">
-        <option value="en">English</option>
-      </select></label>
+    <button id="settings-open" class="settings-open secondary" type="button" aria-haspopup="dialog"
+      aria-controls="settings-drawer" aria-expanded="false">Settings</button>
   </header>
   <main>
-    <section class="intro">
-      <div>
-        <h2>Hear it. Follow it. Make it yours.</h2>
-        <p>Practice 12 languages at your own pace. Follow the words, repeat a sentence, then try it
-          without the text.</p>
-      </div>
-    </section>
-    <p id="page-language-help" class="muted small">Page language changes menus and help. Practice language sets
-      pronunciation.</p>
     <p id="notice" role="status"></p>
     <p id="error" role="alert"></p>
+    <div class="workspace-actions actions">
+      <button type="button" class="secondary" data-settings-section="settings-content" aria-haspopup="dialog"
+        aria-controls="settings-drawer" aria-expanded="false">Import content</button>
+      <button type="button" data-settings-section="settings-text" aria-haspopup="dialog" aria-controls="settings-drawer"
+        aria-expanded="false">Edit text</button>
+    </div>
     <div class="workspace">
       <section class="card reader-card">
         <div class="section-heading">
@@ -91,7 +88,7 @@
             <h2 id="reading-title" tabindex="-1" lang="en">A sunny morning</h2>
           </div><span id="timing-badge" class="badge">Browser voice</span>
         </div>
-        <p id="timing-note" class="muted"></p>
+        <audio id="audio" preload="none" hidden></audio>
         <div id="content-credit" class="content-credit" hidden>
           <p><span id="credit-name"></span> · <a id="credit-link" target="_blank" rel="noopener noreferrer">Original
               page (opens in new tab)</a><span id="credit-license-wrap" hidden> · <a id="credit-license" target="_blank"
@@ -101,64 +98,103 @@
             Browser voice to hear the full text.</p>
           <audio id="pronunciation" controls preload="none" aria-label="Word pronunciation" hidden></audio>
         </div>
-        <div class="reader-options">
-          <label for="highlight">Highlight<select id="highlight" name="highlight">
-              <option value="both">Word + sentence</option>
-              <option value="word">Word</option>
-              <option value="sentence">Sentence</option>
-              <option value="off">Off</option>
-            </select></label>
-          <label for="highlight-style">Highlight style<select id="highlight-style" name="highlight-style">
-              <option value="background">Background</option>
-              <option value="underline">Underline</option>
-              <option value="both">Background + underline</option>
-            </select></label>
-          <label for="hide-text">Text visibility<select id="hide-text" name="hide-text">
-              <option value="off">Show text</option>
-              <option value="blur">Blur to listen first</option>
-              <option value="hidden">Hide until finished</option>
-            </select></label>
-          <button id="translation" aria-pressed="false">Show translation</button>
-        </div>
+        <div class="playback"><button id="previous" aria-label="Previous sentence"><span
+              aria-hidden="true">←</span></button><button id="play" class="primary">Play</button><button id="next"
+            aria-label="Next sentence"><span aria-hidden="true">→</span></button></div>
         <p id="your-turn" class="turn" role="status" hidden>Your turn — repeat what you heard.</p>
         <p id="sync-hint" class="turn" hidden>Sync is on. Click a word when you hear it to pin its start time.</p>
         <div id="listening-test" hidden>
           <p>Listen first. The text will appear when playback finishes.</p><button id="reveal">Reveal text</button>
         </div>
         <div id="reader" class="reader" lang="en"></div>
-        <div class="actions"><button id="speak-word" type="button">Speak this word</button><button id="speak-selection"
-            type="button" aria-describedby="selection-help" disabled>Speak selection</button><button
-            id="stop-pronunciation" type="button" hidden>Stop pronunciation</button></div>
-        <p id="selection-help" class="muted small">Select text in the reader, then choose Speak selection. Pronunciation
-          uses your chosen browser voice, pauses playback and stops after the word or selection.</p>
-        <p class="reader-help">Click a word to jump. Use Word options to copy it or edit its timing.</p>
         <div class="transport">
           <label for="seek">Recording position</label><input id="seek" type="range" min="0" max="1" step=".01"
             value="0">
           <div class="times"><span id="elapsed">0:00</span><span id="duration">0:00</span></div>
-          <div class="playback"><button id="previous" aria-label="Previous sentence">← Previous</button><button
-              id="play" class="primary">Play</button><button id="next" aria-label="Next sentence">Next →</button><button
-              id="repeat" aria-pressed="false">Repeat sentence</button></div>
           <div class="speed-row"><label for="speed">Speed <output id="speed-value"
                 for="speed">1.00×</output></label><input id="speed" type="range" min=".5" max="1.5" step=".05"
               value="1"></div>
-          <div class="speed-row"><label for="volume">Volume <output id="volume-value"
-                for="volume">100%</output></label><input id="volume" type="range" min="0" max="1" step=".05" value="1"
-              aria-valuetext="100%" aria-describedby="sound-help"></div>
-          <p id="sound-help" class="muted small">Volume applies to recordings, pronunciation clips and browser speech.
-            Changes stop browser speech; press Play or test the voice again. Some devices use system volume for
-            recordings.</p>
-          <div class="checks"><label for="follow"><input id="follow" type="checkbox" checked>Follow words</label><label
-              for="scroll"><input id="scroll" type="checkbox" checked>Auto-scroll</label><label for="shadow"><input
-                id="shadow" type="checkbox">Shadowing · 1.8s pause</label></div>
-          <p class="muted small">Shortcuts outside controls: Space play/pause · ← / → sentence</p>
         </div>
+        <div class="reader-actions"><button id="translation" aria-pressed="false">Show translation</button><button
+            id="repeat" aria-pressed="false">Repeat sentence</button></div>
+        <details class="pronunciation-tools">
+          <summary>Word pronunciation</summary>
+          <div class="actions"><button id="speak-word" type="button">Speak this word</button><button
+              id="speak-selection" type="button" aria-describedby="selection-help" disabled>Speak
+              selection</button><button id="stop-pronunciation" type="button" hidden>Stop pronunciation</button></div>
+          <p id="selection-help" class="muted small">Select text in the reader, then choose Speak selection.
+            Pronunciation
+            uses your chosen browser voice, pauses playback and stops after the word or selection.</p>
+          <p class="muted small">Shortcuts outside controls: Space play/pause · ← / → sentence</p>
+          <p class="reader-help">Click a word to jump. Use Word options to copy it or edit its timing.</p>
+        </details>
       </section>
-      <aside class="sidebar" aria-label="Practice setup">
-        <section class="card">
-          <div class="section-heading">
-            <h2>1. Choose your content</h2><span class="step">Discover</span>
+
+    </div>
+    <details class="card editor" id="timing-tools">
+      <summary>Sync editor</summary>
+      <div class="timing-tools-body">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Make the words follow your recording</p>
+
+          </div><button id="sync" aria-pressed="false">Sync mode</button>
+        </div>
+        <p>Import word timings, or play your recording and click words as you hear them. Your pins stay fixed while the
+          words between them are redistributed.</p>
+        <div class="actions"><button id="distribute">Estimate all timings</button><button id="export-timings">Export
+            timings</button><button id="word-options">Word options</button><span id="pin-count" class="muted">0
+            pins</span></div>
+        <details>
+          <summary>Import or edit word timings</summary>
+          <p id="json-help">One entry per word, in text order: <code>[{"word":"Good","start":0,"end":0.4}, …]</code>.
+            Include every occurrence of repeated words.</p><label for="timings-json">Timings JSON</label><textarea
+            id="timings-json" rows="5" aria-describedby="json-help"></textarea><label for="timings-file">Or choose a
+            timings file</label><input id="timings-file" type="file" accept=".json,application/json"><button
+            id="import-timings">Apply timings</button>
+        </details>
+        <details>
+          <summary>How highlighting works</summary>
+          <p id="timing-note" class="muted"></p>
+          <div class="explanation">
+            <p><b>Browser voice:</b> highlighting follows word-boundary events when the chosen voice provides them. If
+              it
+              does not, the current sentence stays highlighted. Voice availability depends on your device.</p>
+            <p><b>Original recordings:</b> words are estimated from text length until you import or manually adjust word
+              timestamps. JW.org imports use publisher verse/paragraph boundaries where available, with estimated words
+              inside each segment.</p>
+            <p><b>Imported timestamps:</b> the player uses the times you provide. Accuracy depends on how those
+              timestamps
+              were made; there is no fixed error guarantee. Forced-alignment output must match this exact text and
+              recording.</p>
+            <p>Translations into your page language are supplied only for the built-in demos. They are not generated for
+              imported text.
+            </p>
           </div>
+        </details>
+      </div>
+    </details>
+  </main>
+  <dialog id="settings-drawer" class="settings-drawer" aria-labelledby="settings-title" aria-describedby="settings-help"
+    closedby="any">
+    <div class="drawer-header">
+      <h2 id="settings-title">Settings</h2>
+      <form method="dialog"><button id="settings-close" type="submit" aria-label="Close" autofocus><span
+            aria-hidden="true">×</span></button></form>
+    </div>
+    <div class="drawer-content">
+      <p id="settings-help" class="muted small">Opening settings stops playback. Press Play when you are ready to
+        continue.</p>
+      <label class="page-language" for="page-language"><span>Page language</span>
+        <select id="page-language" name="page-language" aria-describedby="page-language-help">
+          <option value="en">English</option>
+        </select></label>
+      <p id="page-language-help" class="muted small">Page language changes menus and help. Practice language sets
+        pronunciation.</p>
+      <details class="drawer-section" name="settings-sections" id="settings-content">
+        <summary>Content and language</summary>
+        <div class="drawer-section-body">
+
           <div class="practice-language-row">
             <label for="practice-language">Practice language<select id="practice-language" name="practice-language"
                 aria-describedby="language-help">
@@ -186,11 +222,13 @@
           </form>
           <p class="muted small">Examples follow your practice language. Imported pages set their own language; your
             page language stays unchanged.</p>
-        </section>
-        <section class="card">
-          <div class="section-heading">
-            <h2>2. Choose how to listen</h2><span class="step">Listen</span>
-          </div>
+
+        </div>
+      </details>
+      <details class="drawer-section" name="settings-sections" id="settings-audio">
+        <summary>Voice and audio</summary>
+        <div class="drawer-section-body">
+
           <fieldset class="source-picker">
             <legend>Audio source</legend><label for="source-tts"><input id="source-tts" name="source" type="radio"
                 value="tts" checked>Browser voice</label><label for="source-audio"><input id="source-audio"
@@ -236,24 +274,60 @@
                   placeholder="https://…/audio.mp3"><button type="submit">Load recording</button></form>
             </details>
             <p id="audio-name" class="muted small">No recording selected.</p>
-            <audio id="audio" controls preload="none"></audio>
+
           </div>
-        </section>
-        <section class="card">
-          <div class="section-heading">
-            <h2>3. Make it your text</h2><span class="step">Read</span>
+
+          <div class="speed-row"><label for="volume">Volume <output id="volume-value"
+                for="volume">100%</output></label><input id="volume" type="range" min="0" max="1" step=".05" value="1"
+              aria-valuetext="100%" aria-describedby="sound-help"></div>
+          <p id="sound-help" class="muted small">Volume applies to recordings, pronunciation clips and browser speech.
+            Changes stop browser speech; press Play or test the voice again. Some devices use system volume for
+            recordings.</p>
+        </div>
+      </details>
+      <details class="drawer-section" name="settings-sections" id="settings-reader">
+        <summary>Reader settings</summary>
+        <div class="drawer-section-body">
+          <div class="reader-options">
+            <label for="highlight">Highlight<select id="highlight" name="highlight">
+                <option value="both">Word + sentence</option>
+                <option value="word">Word</option>
+                <option value="sentence">Sentence</option>
+                <option value="off">Off</option>
+              </select></label>
+            <label for="highlight-style">Highlight style<select id="highlight-style" name="highlight-style">
+                <option value="background">Background</option>
+                <option value="underline">Underline</option>
+                <option value="both">Background + underline</option>
+              </select></label>
+            <label for="hide-text">Text visibility<select id="hide-text" name="hide-text">
+                <option value="off">Show text</option>
+                <option value="blur">Blur to listen first</option>
+                <option value="hidden">Hide until finished</option>
+              </select></label>
           </div>
+          <div class="checks"><label for="follow"><input id="follow" type="checkbox" checked>Follow words</label><label
+              for="scroll"><input id="scroll" type="checkbox" checked>Auto-scroll</label><label for="shadow"><input
+                id="shadow" type="checkbox">Shadowing · 1.8s pause</label></div>
+        </div>
+      </details>
+      <details class="drawer-section" name="settings-sections" id="settings-text">
+        <summary>Edit text</summary>
+        <div class="drawer-section-body">
+
           <label for="title">Practice title</label><input id="title" value="A sunny morning" maxlength="200">
           <label id="text-label" for="text">English text</label><textarea id="text" lang="en" rows="6"
             maxlength="100000" aria-describedby="language-help"></textarea>
           <button id="apply-text">Apply text</button>
           <p id="word-count" class="muted small"></p>
           <p class="muted small">Changing the text resets its word timings. Local audio files stay in your browser.</p>
-        </section>
-        <section class="card">
-          <div class="section-heading">
-            <h2>4. Keep your practice</h2><span class="step">Repeat</span>
-          </div>
+
+        </div>
+      </details>
+      <details class="drawer-section" name="settings-sections" id="settings-sessions">
+        <summary>Saved sessions</summary>
+        <div class="drawer-section-body">
+
           <div class="actions"><button id="save" class="secondary">Save session</button><button
               id="export-session">Export session</button></div>
           <label for="session-file">Import a session JSON file</label><input id="session-file" type="file"
@@ -261,47 +335,15 @@
           <ul id="sessions" class="sessions"></ul>
           <p class="muted small">Saved in this browser. Export a session to keep a portable copy. Audio files must be
             selected again after reloading.</p>
-        </section>
-      </aside>
-    </div>
-    <section class="card editor">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Make the words follow your recording</p>
-          <h2>Sync editor</h2>
-        </div><button id="sync" aria-pressed="false">Sync mode</button>
-      </div>
-      <p>Import word timings, or play your recording and click words as you hear them. Your pins stay fixed while the
-        words between them are redistributed.</p>
-      <div class="actions"><button id="distribute">Estimate all timings</button><button id="export-timings">Export
-          timings</button><button id="word-options">Word options</button><span id="pin-count" class="muted">0
-          pins</span></div>
-      <details>
-        <summary>Import or edit word timings</summary>
-        <p id="json-help">One entry per word, in text order: <code>[{"word":"Good","start":0,"end":0.4}, …]</code>.
-          Include every occurrence of repeated words.</p><label for="timings-json">Timings JSON</label><textarea
-          id="timings-json" rows="5" aria-describedby="json-help"></textarea><label for="timings-file">Or choose a
-          timings file</label><input id="timings-file" type="file" accept=".json,application/json"><button
-          id="import-timings">Apply timings</button>
-      </details>
-      <details>
-        <summary>How highlighting works</summary>
-        <div class="explanation">
-          <p><b>Browser voice:</b> highlighting follows word-boundary events when the chosen voice provides them. If it
-            does not, the current sentence stays highlighted. Voice availability depends on your device.</p>
-          <p><b>Original recordings:</b> words are estimated from text length until you import or manually adjust word
-            timestamps. JW.org imports use publisher verse/paragraph boundaries where available, with estimated words
-            inside each segment.</p>
-          <p><b>Imported timestamps:</b> the player uses the times you provide. Accuracy depends on how those timestamps
-            were made; there is no fixed error guarantee. Forced-alignment output must match this exact text and
-            recording.</p>
-          <p>Translations into your page language are supplied only for the built-in demos. They are not generated for
-            imported text.
-          </p>
+
         </div>
       </details>
-    </section>
-  </main>
+    </div>
+    <form method="dialog" class="drawer-footer">
+      <p id="settings-notice" role="status"></p>
+      <p id="settings-error" role="alert"></p><button class="primary" type="submit">Read</button>
+    </form>
+  </dialog>
   <dialog id="word-dialog" aria-labelledby="word-dialog-title">
     <form method="dialog">
       <div class="section-heading">

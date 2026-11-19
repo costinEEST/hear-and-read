@@ -308,5 +308,12 @@
     "few": "{count} puncte fixate",
     "many": "{count} de puncte fixate",
     "other": "{count} de puncte fixate"
-  }
+  },
+  "Settings": "Setări",
+  "Edit text": "Editează textul",
+  "Reader settings": "Setări de citire",
+  "Content and language": "Conținut și limbă",
+  "Voice and audio": "Voce și înregistrare",
+  "Saved sessions": "Sesiuni salvate",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Deschiderea setărilor oprește redarea. Apasă Redă când ești gata să continui."
 }

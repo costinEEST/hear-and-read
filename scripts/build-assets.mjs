@@ -7,6 +7,7 @@ export const publicFiles = [
   "index.html",
   "styles.css",
   "app.js",
+  "settings-drawer.js",
   "pwa.js",
   "manifest.webmanifest",
   "timing.js",

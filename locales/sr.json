@@ -308,5 +308,12 @@
     "few": "{count} тачке",
     "many": "{count} тачака",
     "other": "{count} тачке"
-  }
+  },
+  "Settings": "Подешавања",
+  "Edit text": "Уреди текст",
+  "Reader settings": "Подешавања читања",
+  "Content and language": "Садржај и језик",
+  "Voice and audio": "Глас и звук",
+  "Saved sessions": "Сачуване сесије",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Отварање подешавања зауставља репродукцију. Притисни Пусти када будеш спреман да наставиш."
 }

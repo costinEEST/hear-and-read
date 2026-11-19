@@ -308,5 +308,12 @@
     "few": "{count} pins",
     "many": "{count} pins",
     "other": "{count} pins"
-  }
+  },
+  "Settings": "Settings",
+  "Edit text": "Edit text",
+  "Reader settings": "Reader settings",
+  "Content and language": "Content and language",
+  "Voice and audio": "Voice and audio",
+  "Saved sessions": "Saved sessions",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Opening settings stops playback. Press Play when you are ready to continue."
 }

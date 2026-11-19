@@ -26,6 +26,7 @@ import {
 import { LANGUAGES, DEMOS, bestVoices, languageConfig } from "./speech.js";
 
 import { createSpeechPlayback } from "./speech-playback.js";
+import { initSettingsDrawer } from "./settings-drawer.js";
 
 const speech = createSpeechPlayback({ onstatechange: renderSpeechState });
 const $ = (id) => document.getElementById(id);
@@ -78,9 +79,11 @@ const state = {
 state.timings = estimate(state.parsed.words, state.parsed.words.length * 0.48);
 const notice = (message) => {
   uiText($("notice"), () => message);
+  uiText($("settings-notice"), () => message);
 };
 const error = (message) => {
   uiText($("error"), () => message);
+  uiText($("settings-error"), () => message);
 };
 const guard = (fn) => async (event) => {
   try {
@@ -155,6 +158,7 @@ function stop() {
   state.playing = false;
   uiText($("play"), () => "Play");
 }
+initSettingsDrawer({ beforeOpen: stop });
 function renderCredit() {
   const source = state.source;
   $("content-credit").hidden = !source;
@@ -1595,7 +1599,8 @@ document.addEventListener(
       event.target.closest(
         "button,a,input,textarea,select,summary,[contenteditable],dialog",
       ) ||
-      $("word-dialog").open
+      $("word-dialog").open ||
+      $("settings-drawer").open
     )
       return;
     if (event.code === "Space") {

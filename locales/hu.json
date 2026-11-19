@@ -308,5 +308,12 @@
     "few": "{count} rögzítés",
     "many": "{count} rögzítés",
     "other": "{count} rögzítés"
-  }
+  },
+  "Settings": "Beállítások",
+  "Edit text": "Szöveg szerkesztése",
+  "Reader settings": "Olvasási beállítások",
+  "Content and language": "Tartalom és nyelv",
+  "Voice and audio": "Hang és felvétel",
+  "Saved sessions": "Mentett munkamenetek",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "A beállítások megnyitása leállítja a lejátszást. A folytatáshoz kattintson a Lejátszás gombra."
 }

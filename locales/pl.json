@@ -308,5 +308,12 @@
     "few": "{count} punkty",
     "many": "{count} punktów",
     "other": "{count} punkty"
-  }
+  },
+  "Settings": "Ustawienia",
+  "Edit text": "Edytuj tekst",
+  "Reader settings": "Ustawienia czytania",
+  "Content and language": "Treść i język",
+  "Voice and audio": "Głos i dźwięk",
+  "Saved sessions": "Zapisane sesje",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Otwarcie ustawień zatrzymuje odtwarzanie. Naciśnij Odtwórz, aby kontynuować."
 }

@@ -308,5 +308,12 @@
     "few": "{count} точки",
     "many": "{count} точок",
     "other": "{count} точки"
-  }
+  },
+  "Settings": "Налаштування",
+  "Edit text": "Редагувати текст",
+  "Reader settings": "Налаштування читання",
+  "Content and language": "Вміст і мова",
+  "Voice and audio": "Голос і аудіо",
+  "Saved sessions": "Збережені сеанси",
+  "Opening settings stops playback. Press Play when you are ready to continue.": "Відкриття налаштувань зупиняє відтворення. Натисніть «Відтворити», коли будете готові продовжити."
 }
