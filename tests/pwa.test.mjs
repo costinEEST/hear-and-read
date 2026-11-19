@@ -91,6 +91,7 @@ test("offline shell serves home query variants, every language and script withou
   ].map((match) => match[1]);
   for (const path of [
     "styles.css",
+    "playback-label.js",
     "settings-drawer.js",
     ...modules,
     "timing.js",

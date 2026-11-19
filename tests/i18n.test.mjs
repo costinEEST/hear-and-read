@@ -156,3 +156,47 @@ test("failed and obsolete locale requests leave the committed locale intact", as
   assert.match(picker.validationMessage, /could not load/u);
   assert.ok(english.Play);
 });
+
+test("dynamic translations preserve text nodes and skip unchanged DOM writes", async () => {
+  const { i18n, fetches } = await environment("hu");
+  let writes = 0;
+  const child = {
+    nodeType: 3,
+    value: "Lejátszás",
+    get data() {
+      return this.value;
+    },
+    set data(value) {
+      writes++;
+      this.value = value;
+    },
+  };
+  const element = {
+    isConnected: true,
+    firstChild: child,
+    childNodes: [child],
+    get textContent() {
+      return child.data;
+    },
+    set textContent(_) {
+      throw new Error("The text node must not be replaced");
+    },
+  };
+  const initialFetches = fetches.length;
+  i18n.uiText(element, "Play");
+  i18n.uiText(element, () => "Play");
+  assert.equal(writes, 0);
+  i18n.uiText(element, "Pause");
+  assert.equal(element.textContent, "Szünet");
+  assert.equal(writes, 1);
+  i18n.refreshTranslations();
+  assert.equal(writes, 1);
+  assert.equal(
+    fetches.length,
+    initialFetches,
+    "button updates must use the cached dictionary",
+  );
+  await i18n.changeLocale("ro");
+  assert.equal(element.textContent, "Pauză");
+  assert.equal(element.firstChild, child);
+});

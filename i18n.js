@@ -38,20 +38,33 @@ export function t(source) {
     const values = {};
     names.forEach((name, index) => {
       let value = match[index + 1];
-      const isLanguage = index === 0 && /^(No suitable|Add |Practice language changed|Content imported|\{p0\} demo)/u.test(template);
+      const isLanguage =
+        index === 0 &&
+        /^(No suitable|Add |Practice language changed|Content imported|\{p0\} demo)/u.test(
+          template,
+        );
       if (isLanguage) {
-        const code = Object.keys(LANGUAGES).find(code => LANGUAGES[code].name === value);
+        const code = Object.keys(LANGUAGES).find(
+          (code) => LANGUAGES[code].name === value,
+        );
         if (code) value = languageName(code);
       }
       const isFragment =
-        (template.includes("Word highlighting depends") && [0,3,4,5].includes(index)) ||
+        (template.includes("Word highlighting depends") &&
+          [0, 3, 4, 5].includes(index)) ||
         (template.startsWith("Import failed") && index === names.length - 1) ||
-        ((template.startsWith("Loaded") || template.startsWith("Practice language changed") || template.startsWith("Content imported")) && index === 1) ||
+        ((template.startsWith("Loaded") ||
+          template.startsWith("Practice language changed") ||
+          template.startsWith("Content imported")) &&
+          index === 1) ||
         template.startsWith("Studio could not initialize");
       if (isFragment) value = tFragment(value);
       values[name] = value;
     });
-    result = result.replace(/\{(p\d+)\}/gu, (token, name) => values[name] ?? token);
+    result = result.replace(
+      /\{(p\d+)\}/gu,
+      (token, name) => values[name] ?? token,
+    );
     return result;
   }
   return source;
@@ -61,9 +74,19 @@ function tFragment(value) {
   return Object.hasOwn(messages, key) ? messages[key] : t(value);
 }
 export function uiText(element, value) {
+  // A dynamic binding owns its text; don't retain an initial static binding
+  // for the same child when updating its Text node in place.
+  for (const child of element.childNodes || []) textBindings.delete(child);
   textBindings.set(element, value);
   const text = typeof value === "function" ? value() : value;
-  element.textContent = t(text);
+  updateText(element, t(text));
+}
+function updateText(element, text) {
+  if (element.textContent === text) return;
+  const child = element.firstChild;
+  if (element.childNodes?.length === 1 && child.nodeType === 3)
+    child.data = text;
+  else element.textContent = text;
 }
 export function uiAttribute(element, attribute, value) {
   const existing = attributeBindings.find(
@@ -78,7 +101,11 @@ export function uiAttribute(element, attribute, value) {
 }
 export function countLabel(count, kind) {
   const category = new Intl.PluralRules(locale).select(count);
-  const forms = messages[`count.${kind}`] || english[`count.${kind}`] || {one:`{count} ${kind === "words" ? "word" : kind === "sentences" ? "sentence" : "pin"}`,other:`{count} ${kind}`};
+  const forms = messages[`count.${kind}`] ||
+    english[`count.${kind}`] || {
+      one: `{count} ${kind === "words" ? "word" : kind === "sentences" ? "sentence" : "pin"}`,
+      other: `{count} ${kind}`,
+    };
   return (forms[category] || forms.other).replaceAll(
     "{count}",
     new Intl.NumberFormat(locale).format(count),
@@ -123,8 +150,10 @@ export function refreshTranslations() {
     }
     const value = typeof source === "function" ? source() : source;
     // A Text node keeps surrounding inline elements (links, controls, emphasis) intact.
-    if (node.nodeType === Node.TEXT_NODE) node.data = ` ${t(value)} `;
-    else node.textContent = t(value);
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = ` ${t(value)} `;
+      if (node.data !== text) node.data = text;
+    } else updateText(node, t(value));
   }
   for (let i = attributeBindings.length - 1; i >= 0; i--) {
     const { element, attribute, value } = attributeBindings[i];
@@ -176,7 +205,8 @@ export async function changeLocale(
     picker.setCustomValidity("");
     const url = new URL(location.href);
     if (!history && !url.searchParams.has("lang") && code !== "en") {
-      url.searchParams.set("lang", code); window.history.replaceState(window.history.state, "", url);
+      url.searchParams.set("lang", code);
+      window.history.replaceState(window.history.state, "", url);
     }
     refreshTranslations();
     onChange();
@@ -192,15 +222,20 @@ export async function changeLocale(
     picker.setCustomValidity(t("Language could not load. Please try again."));
     picker.reportValidity();
     if (!history) {
-      const url = new URL(location.href); url.searchParams.set("lang", previous);
+      const url = new URL(location.href);
+      url.searchParams.set("lang", previous);
       window.history.replaceState(window.history.state, "", url);
     }
   }
 }
 export async function initI18n({ onChange: callback = () => {} } = {}) {
   onChange = callback;
-  try { english = await dictionary("en"); }
-  catch { english = {}; cache.set("en", english); }
+  try {
+    english = await dictionary("en");
+  } catch {
+    english = {};
+    cache.set("en", english);
+  }
   messages = english;
   patterns = Object.keys(english)
     .filter((key) => /\{p\d+\}/u.test(key))
